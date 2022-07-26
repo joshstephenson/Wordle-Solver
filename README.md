@@ -1,4 +1,4 @@
-# Wordle Solver
+# Python Wordle Solver
 
 This is a Python script to solve [NYTimes Wordle](https://www.nytimes.com/games/wordle/index.html) in least possible guesses.
 
