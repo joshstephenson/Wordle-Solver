@@ -16,8 +16,8 @@ for i in range(len(LFREQ)):
 
 def _get_word_points(word):
     points = 0
-    for char in word:
-        points += FRDICT[char]
+    for letter in word:
+        points += FRDICT[letter]
     return points
 
 class Solution:
@@ -61,7 +61,7 @@ class Solver:
     def _find_guess(self):
         target_count = len(self.matches)
         guess = None
-        print("Finding guess for chars: " + str(self.matches))
+        print("Finding guess for letters: " + str(self.matches))
         while guess is None:
             if len(self.words) == 0:
                 raise "No Match Found."
@@ -84,20 +84,20 @@ class Solver:
         guess = self._find_guess()
         while self._is_solved(guess) is False:
             index = 0
-            for char in guess:
-                matching = re.compile(char)
+            for letter in guess:
+                matching = re.compile(letter)
                 result = matching.search(self.target)
 
-                # character is in target word
+                # letter is in target word
                 if result is not None:
                     position = result.span()[0]
-                    # character is in correct position
+                    # letter is in correct position
                     if position == index:
-                        self.matches[char] = index
+                        self.matches[letter] = index
 
-                    # character is not in correct position
+                    # letter is not in correct position
                     else:
-                        self.matches[char] = -1
+                        self.matches[letter] = -1
                 index += 1
             guess = self._find_guess()
 
