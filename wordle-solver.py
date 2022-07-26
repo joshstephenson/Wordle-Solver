@@ -8,6 +8,18 @@ LENGTH = 5
 # https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
 LFREQ = [l for l in "EARIOTNSLCUDPMHGBFYWKVXZJQ"]
 
+# FRDICT dictionary will map letters to points. Those with most frequency get most points.
+# Words can then have points based on frequency of characters
+FRDICT = dict()
+for i in range(len(LFREQ)):
+    FRDICT[LFREQ[i]] = 26-i
+
+def _get_word_points(word):
+    points = 0
+    for char in word:
+        points += FRDICT[char]
+    return points
+
 class Solution:
     def __init__(self, word, guess_count):
         self.word = word
@@ -16,20 +28,32 @@ class Solution:
 class Solver:
     def __init__(self, target):
         self.target = target
+        self.words = []
         self._get_words()
         self.guesses = []
         self.matches = dict()
 
     def _get_words(self, file=DICTIONARY):
-        words = []
-        with open(file, 'r') as dict:
-            for line in dict:
+        word_arr = []
+
+        # Open dictionary and save words with correct length
+        with open(file, 'r') as words:
+            for line in words:
                 word = line.strip().upper()
-                if len(word) == 5:
-                    words.append(word)
+                if len(word) == LENGTH:
+                    word_arr.append(word)
 
-        self.words = words
+        # Apparently sorting words by frequency lead to poorer performance by far
+        # Sort words by frequency of characters in English
+#        word_dict = dict()
+#        for word in word_arr:
+#            word_dict[word] = _get_word_points(word)
+#
+#        sorted_words = sorted(word_dict.items(), key=lambda item: item[1], reverse=True)
+#        for word in sorted_words:
+#            self.words.append(word[0])
 
+        self.words = word_arr
 
     def _is_solved(self, word):
         return word == self.target
@@ -80,6 +104,6 @@ class Solver:
         print(self.guesses)
         return Solution(guess, len(self.guesses))
 
-solution = Solver("CINIC").solve()
+solution = Solver("CYNIC").solve()
 
 print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses.")
