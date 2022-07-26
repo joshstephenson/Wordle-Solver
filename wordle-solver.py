@@ -21,12 +21,15 @@ class Solver:
         self.matches = dict()
 
     def _get_words(self, file=DICTIONARY):
-        self.words = []
+        words = []
         with open(file, 'r') as dict:
             for line in dict:
                 word = line.strip().upper()
                 if len(word) == 5:
-                    self.words.append(word)
+                    words.append(word)
+
+        self.words = words
+
 
     def _is_solved(self, word):
         return word == self.target
@@ -36,6 +39,8 @@ class Solver:
         guess = None
         print("Finding guess for chars: " + str(self.matches))
         while guess is None:
+            if len(self.words) == 0:
+                raise "No Match Found."
             for word in self.words:
                 #print("--- " + word)
                 self.words.remove(word)
@@ -49,8 +54,6 @@ class Solver:
                     guess = word
                     self.guesses.append(guess)
                     break
-        if guess is None:
-            raise "NO GUESS"
         return guess
 
     def solve(self):
@@ -77,6 +80,6 @@ class Solver:
         print(self.guesses)
         return Solution(guess, len(self.guesses))
 
-solution = Solver("YEAST").solve()
+solution = Solver("CINIC").solve()
 
 print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses.")
