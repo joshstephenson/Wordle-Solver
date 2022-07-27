@@ -195,33 +195,7 @@ class Data:
                 raise "No Inclusive Guesses Left"
             else:
                 guess = self._inclusive[0]
-#                inclusive = self._inclusive.copy()
-#                for word in inclusive:
-#                    current_count = 0
-#
-#                    # First check for any positional matches
-#                    for letter in self._positional:
-#                        if word[self._positional[letter]] != letter:
-#                            self._inclusive.remove(word)
-#                            break
-#                        else:
-#                            current_count += 1
-#
-#                    # Then check for all non positional matches
-#                    for letter in self._non_positional:
-#                        if re.search(letter, word) is not None:
-#                            current_count += 1
-#
-#                    print(word + ": current_count: " + str(current_count) + ", target: " + str(target_count))
-#                    if current_count >= target_count:
-#                        guess = word
-#                        break
-#                    elif word in self._inclusive:
-#                        self._inclusive.remove(word)
 
-        # TODO: this probably goes somewhere else
-        if guess in self._inclusive:
-            self._inclusive.remove(guess)
         return guess
 
     def _exclusive_guess(self):
