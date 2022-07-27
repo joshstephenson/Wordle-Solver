@@ -1,7 +1,8 @@
 #!/Library/Frameworks/Python.framework/Versions/Current/bin/python3
 import re
 
-DICTIONARY = "/usr/share/dict/words"
+#DICTIONARY = "/usr/share/dict/words"
+DICTIONARY = "./wordle-dictionary.txt"
 LENGTH = 5
 PENALTY_FOR_LETTER_REDUNDANCY = 0
 
@@ -65,80 +66,129 @@ def _has_redundancy(guess):
 # - switch to inclusive guesses
 
 class Data:
+    class Letters:
+        def __init__(self):
+            # These are for letters in known position
+            self.green  = dict()
+
+            # letters in the word but in the wrong position
+            self.yellow = set()
+
+            # letters not in the word
+            self.gray   = set()
+
+            # letters used in guesses
+            self.used   = set()
+
+            self.letter_count = 0
+
+        def hit(self, letter, position):
+            self.used.add(letter)
+            if position > -1:
+                if letter not in self.green:
+                    self.green[letter] = []
+                if position not in self.green[letter]:
+                    self.green[letter].append(position)
+                    if letter in self.yellow:
+                        self.yellow.remove(letter)
+                    else:
+                        self.letter_count += 1
+            elif position == -1:
+                self.yellow.add(letter)
+                self.letter_count += 1
+
+        def miss(self, letter):
+            self.gray.add(letter)
+            self.used.add(letter)
+
+        def matching(self):
+            return self.yellow.union(set(self.green.keys()))
+
     def __init__(self):
+        self.letters = Data.Letters()
         words = self._get_words()
 
-        # all letter matches with letter as key and index as value
-        self._matches = dict()
-
-        # only positional matches where value is >= 0
-        self._positional = dict()
-
-        # only non-positional matches where value is -1
-        self._non_positional = dict()
-
-        # keep track of which letters have been used in guesses
-        self._letters_used = []
-
         # words in the dictionary
-        self._words  = words.copy()
+        self._words = words.copy()
 
         # words that will match against letter matches above irrespective of position
-        self._inclusive  = _sort_by_score(words.copy())
+        self._inclusive = _sort_by_score(words.copy())
 
         # words that will not match against any letters in matches
-        self._exclusive  = _sort_by_score(words.copy())
+        self._exclusive = _sort_by_score(words.copy())
 
         # words we have guessed
-        self.guesses    = []
+        self.guesses = []
 
-    def _used_unmatched_letters(self):
-        return list(filter(lambda letter: letter not in self._matches.keys(), self._letters_used))
+    # Only way to add a match from another class
+    def hit(self, letter, position):
+        self.letters.hit(letter, position)
+        self._prune(False)
+        self._prune(True)
 
-    # Only way to add a match from the outside
-    def add_match(self, letter, position):
-        if position > -1 and letter not in self._positional:
-            self._positional[letter] = position
-            self._matches[letter] = position
-        if position == -1 and letter not in self._non_positional:
-            self._non_positional[letter] = position
-            self._matches[letter] = position
-
-        self._cleanup()
-
-    def _cleanup(self, inclusive = False):
-        if inclusive:
-            self._cleanup_inclusive()
-        else:
-            self._cleanup_exclusive()
-
-    def _cleanup_inclusive(self):
-        # remove words from inclusive if matched letters ARE NOT in the word
-        for letter in self._matches.keys():
-            inclusive = self._inclusive.copy()
-            for word in inclusive:
-                position = self._matches[letter]
-                if re.search(letter, word) is None or (position > -1 and word[position] != letter):
-                    self._inclusive.remove(word)
-
-        unmatched_letters = self._used_unmatched_letters()
+    def miss(self, letter):
+        self.letters.miss(letter)
+        self._prune()
         inclusive = self._inclusive.copy()
         for word in inclusive:
-            for letter in word:
-                if letter in unmatched_letters:
-                    self._inclusive.remove(word)
-                    break
+            # Remove all words that have letters we know don't match
+            if re.search(letter, word) is not None:
+                self._inclusive.remove(word)
 
-    def _cleanup_exclusive(self):
-        for letter in self._letters_used:
-            # remove words from exclusive if matched letters ARE in the word
-            exclusive = self._exclusive.copy()
-            for word in exclusive:
+    def add_guess(self, guess, inclusive = False):
+        self.guesses.append(guess)
+        if guess in self._exclusive:
+            self._exclusive.remove(guess)
+        if guess in self._inclusive:
+            self._inclusive.remove(guess)
+
+
+    def _prune(self, inclusive = False):
+        if inclusive:
+            self._prune_inclusive()
+        else:
+            self._prune_exclusive()
+
+    def _prune_inclusive(self):
+        # remove words from inclusive if we don't have green letters
+        inclusive = self._inclusive.copy()
+        for word in inclusive:
+            dropped_word = False
+            if not dropped_word:
+                for letter in self.letters.gray:
+                    if re.search(letter, word) is not None:
+                        self._inclusive.remove(word)
+                        dropped_word = True
+                        break
+            if not dropped_word:
+                for letter in self.letters.yellow:
+                    if dropped_word:
+                        break
+                    if re.search(letter, word) is None:
+                        self._inclusive.remove(word)
+                        dropped_word = True
+                        break
+            if not dropped_word:
+                for letter in self.letters.green.keys():
+                    if dropped_word:
+                        break
+                    for position in self.letters.green[letter]:
+                        if word[position] != letter:
+                            self._inclusive.remove(word)
+                            dropped_word = True
+                            break
+
+    def _prune_exclusive(self):
+        # remove words from exclusive if used letters ARE in the word
+        exclusive = self._exclusive.copy()
+        for word in exclusive:
+            for letter in self.letters.used:
                 if re.search(letter, word) is not None:
                     self._exclusive.remove(word)
+                    break
 
     def _inclusive_guess(self):
-        target_count = len(self._matches)
+        target_count = self.letters.letter_count
         guess = None
         while guess is None:
             if len(self._inclusive) == 0:
@@ -186,16 +236,10 @@ class Data:
             guess = self._inclusive_guess()
             inclusive = True
 
-        print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self._matches))
+#        print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
 
         # Keep track of words and letters guessed
-        self.guesses.append(guess)
-        for letter in guess:
-            if letter not in self._letters_used:
-                self._letters_used.append(letter)
-
-        # update the inclusive and exclusive lists
-        self._cleanup(inclusive)
+        self.add_guess(guess, inclusive)
 
         return guess
 
@@ -228,19 +272,24 @@ class Solver:
 
         index = 0
         for letter in guess:
-            result = re.search(letter, self.target)
+            # This gives us ALL the positions of a matching letter
+            results = [_.start() for _ in re.finditer(letter, self.target)]
 
-            # if the letter is a match
-            if result is not None:
-                position = result.span()[0]
+            # if the letter is a miss
+            if len(results) == 0:
+                self.data.miss(letter)
 
-                # letter is in correct position
-                if position == index:
-                    self.data.add_match(letter, position)
+            # if the letter is a hit
+            else:
+                for position in results:
 
-                # letter is not in the correct position
-                else:
-                    self.data.add_match(letter, -1)
+                    # letter is in correct position
+                    if position == index:
+                        self.data.hit(letter, position)
+
+                    # letter is not in the correct position
+                    else:
+                        self.data.hit(letter, -1)
 
             index += 1
 
@@ -256,16 +305,16 @@ class Solver:
 
         return Solution(self.data.guesses)
 
-solution = Solver("STEAM").solve()
-print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
-print(solution.guesses)
+#solution = Solver("KARMA").solve()
+#print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
+#print(solution.guesses)
 
-#count = 0
-#with open("wordle-answers.txt", 'r') as words:
-#    for word in words:
-#        count += 1
-#        solution = Solver(word.strip()).solve()
-#        print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
-#        if count == 20:
-#            raise "DONE"
+count = 0
+with open("wordle-answers.txt", 'r') as words:
+    for word in words:
+        count += 1
+        solution = Solver(word.strip()).solve()
+        print("solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
+        if count == 20:
+            raise "done"
 
