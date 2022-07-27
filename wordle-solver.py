@@ -13,7 +13,7 @@ LFREQ = [l for l in "EARIOTNSLCUDPMHGBFYWKVXZJQ"]
 # Words can then have points based on frequency of characters
 FRDICT = dict()
 for i in range(len(LFREQ)):
-    FRDICT[LFREQ[i]] = 26-i
+    FRDICT[LFREQ[i]] = (26-i)*5
 
 # generate a score for words based on composition of letters and their frequency in English
 # Don't give points to duplicate letters becaues they don't help in guessing
@@ -33,7 +33,6 @@ def _sort_by_score(words):
     word_dict = dict()
     for word in words:
         word_dict[word] = _get_word_points(word)
-
 
     sorted_word_dict = sorted(word_dict.items(), key=lambda item: item[1], reverse=True)
     sorted_word_arr = []
@@ -62,7 +61,8 @@ def _has_redundancy(guess):
 # AFTER EACH EXCLUSIVE GUESS:
 # - all words that have matching letters are added to `inclusive`
 # - all words that have matching letters are removed from `exclusive`
-# WHEN MATCHES HAS LENGTH=5, THEN SWITCH TO INCLUSIVE GUESSING
+# WHEN EXCLUSIVE MATCHES HAVE BEEN EXHAUSTED
+# - switch to inclusive guesses
 
 class Data:
     def __init__(self):
@@ -92,6 +92,9 @@ class Data:
         # words we have guessed
         self.guesses    = []
 
+    def _used_unmatched_letters(self):
+        return list(filter(lambda letter: letter not in self._matches.keys(), self._letters_used))
+
     # Only way to add a match from the outside
     def add_match(self, letter, position):
         if position > -1 and letter not in self._positional:
@@ -118,15 +121,13 @@ class Data:
                 if re.search(letter, word) is None or (position > -1 and word[position] != letter):
                     self._inclusive.remove(word)
 
-        for letter in self._letters_used:
-            if letter not in self._matches.keys():
-                # remove words from inclusive if matched letters ARE not in the word
-                inclusive = self._inclusive.copy()
-                for word in inclusive:
-                    if re.search(letter, word) is not None:
-                        self._inclusive.remove(word)
-
-#        self._inclusive = _sort_by_score(self._inclusive)
+        unmatched_letters = self._used_unmatched_letters()
+        inclusive = self._inclusive.copy()
+        for word in inclusive:
+            for letter in word:
+                if letter in unmatched_letters:
+                    self._inclusive.remove(word)
+                    break
 
     def _cleanup_exclusive(self):
         for letter in self._letters_used:
@@ -136,8 +137,6 @@ class Data:
                 if re.search(letter, word) is not None:
                     self._exclusive.remove(word)
 
-#        self._exclusive = _sort_by_score(self._exclusive)
-
     def _inclusive_guess(self):
         target_count = len(self._matches)
         guess = None
@@ -145,27 +144,30 @@ class Data:
             if len(self._inclusive) == 0:
                 raise "No Inclusive Matches Left"
             else:
-                inclusive = self._inclusive.copy()
-                for word in inclusive:
-                    current_count = 0
-
-                    # First check for any positional matches
-                    for letter in self._positional:
-                        if word[self._positional[letter]] != letter:
-                            self._inclusive.remove(word)
-                            break
-                        else:
-                            current_count += 1
-
-                    # Then check for all non positional matches
-                    for letter in self._non_positional:
-                        if re.search(letter, word) is not None:
-                            current_count += 1
-
+                guess = self._inclusive[0]
+#                inclusive = self._inclusive.copy()
+#                for word in inclusive:
+#                    current_count = 0
+#
+#                    # First check for any positional matches
+#                    for letter in self._positional:
+#                        if word[self._positional[letter]] != letter:
+#                            self._inclusive.remove(word)
+#                            break
+#                        else:
+#                            current_count += 1
+#
+#                    # Then check for all non positional matches
+#                    for letter in self._non_positional:
+#                        if re.search(letter, word) is not None:
+#                            current_count += 1
+#
 #                    print(word + ": current_count: " + str(current_count) + ", target: " + str(target_count))
-                    if current_count >= target_count:
-                        guess = word
-                        break
+#                    if current_count >= target_count:
+#                        guess = word
+#                        break
+#                    elif word in self._inclusive:
+#                        self._inclusive.remove(word)
 
         # TODO: this probably goes somewhere else
         if guess in self._inclusive:
@@ -207,17 +209,6 @@ class Data:
                 if len(word) == LENGTH:
                     word_arr.append(word)
 
-        # Apparently sorting words by frequency lead to poorer performance by far
-        # Sort words by frequency of characters in English
-#        word_dict = dict()
-#        for word in word_arr:
-#            word_dict[word] = _get_word_points(word)
-#
-#        sorted_words = sorted(word_dict.items(), key=lambda item: item[1], reverse=True)
-#        for word in sorted_words:
-#            self.words.append(word[0])
-#
-#        print(self.words)
         return word_arr
 
 class Solution:
@@ -265,7 +256,16 @@ class Solver:
 
         return Solution(self.data.guesses)
 
-solution = Solver("MUSKY").solve()
-
-print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses.")
+solution = Solver("STEAM").solve()
+print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
 print(solution.guesses)
+
+#count = 0
+#with open("wordle-answers.txt", 'r') as words:
+#    for word in words:
+#        count += 1
+#        solution = Solver(word.strip()).solve()
+#        print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
+#        if count == 20:
+#            raise "DONE"
+
