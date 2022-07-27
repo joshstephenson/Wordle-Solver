@@ -135,7 +135,7 @@ class Data:
             if re.search(letter, word) is not None:
                 self._inclusive.remove(word)
 
-    def add_guess(self, guess, inclusive = False):
+    def add_guess(self, guess):
         self.guesses.append(guess)
         if guess in self._exclusive:
             self._exclusive.remove(guess)
@@ -192,7 +192,7 @@ class Data:
         guess = None
         while guess is None:
             if len(self._inclusive) == 0:
-                raise "No Inclusive Matches Left"
+                raise "No Inclusive Guesses Left"
             else:
                 guess = self._inclusive[0]
 #                inclusive = self._inclusive.copy()
@@ -227,19 +227,15 @@ class Data:
     def _exclusive_guess(self):
         return self._exclusive[0]
 
-    def next_guess(self):
+    def next_guess(self, inclusive = False):
         guess = None
-        inclusive = False
-        if len(self._exclusive) > 0:
+        if inclusive == False and len(self._exclusive) > 0:
             guess = self._exclusive_guess()
         if guess is None:
             guess = self._inclusive_guess()
             inclusive = True
 
 #        print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
-
-        # Keep track of words and letters guessed
-        self.add_guess(guess, inclusive)
 
         return guess
 
@@ -255,6 +251,12 @@ class Data:
 
         return word_arr
 
+    def matches(self, inclusive = False):
+        if inclusive:
+            return self._inclusive
+        else:
+            return self._exclusive
+
 class Solution:
     def __init__(self, guesses):
         self.word = guesses[-1]
@@ -262,13 +264,14 @@ class Solution:
         self.guesses = guesses
 
 class Solver:
-    def __init__(self, target):
+    def __init__(self, target = None):
         self.target = target
         self.data = Data()
         self.guesses = []
         self._is_solved = False
 
     def _process_guess(self, guess):
+
 
         index = 0
         for letter in guess:
@@ -293,9 +296,12 @@ class Solver:
 
             index += 1
 
+
     def solve(self):
         guess = self.data.next_guess()
         while not self._is_solved:
+            # Keep track of words and letters guessed
+            self.data.add_guess(guess)
             if guess == self.target:
                 self._is_solved = True
                 break
@@ -305,16 +311,32 @@ class Solver:
 
         return Solution(self.data.guesses)
 
+    def hit(self, letter, position = -1):
+        self.data.hit(letter.upper(), position-1)
+
+    def miss(self, string):
+        for letter in string.upper():
+            self.data.miss(letter)
+
+    def guess(self, word):
+        self.data.add_guess(word.upper())
+
+    def next_guess(self, inclusive = False):
+        return self.data.next_guess(inclusive)
+
+    def matches(self, inclusive = False):
+        return self.data.matches(inclusive)
+
+
 #solution = Solver("KARMA").solve()
 #print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
 #print(solution.guesses)
 
 count = 0
-with open("wordle-answers.txt", 'r') as words:
+with open("wordle-dictionary.txt", 'r') as words:
     for word in words:
-        count += 1
-        solution = Solver(word.strip()).solve()
-        print("solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
-        if count == 20:
-            raise "done"
+        if count < 100:
+            count += 1
+            solution = Solver(word.strip()).solve()
+            print("solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
 
