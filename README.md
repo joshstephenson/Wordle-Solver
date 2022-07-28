@@ -30,8 +30,9 @@ solved: TRAWL in 3 guesses: ['AROSE', 'GLINT', 'TRAWL']
 ...
 ```
 
-Second, by loading the Solver class into the python shell or another python script, the user can play world receiving advice on which word to guess next. After each guess the user must provide the feedback from the Wordle game (green, yellow and gray letters).
+Second, by loading the Solver class into the python shell or another python script, a player can play Wordle receiving advice on which word to guess next. After each guess the player must provide the feedback from the Wordle game (green, yellow and gray letters).
 
+Example from July 28th (2022) Wordle (answer: STOMP):
 ```
 from WordleSolver import Solver
   
@@ -47,7 +48,7 @@ solver.hit("t")
 solver.guess("stowp")
 ```
 
-Output from July 28th Wordle (answer: STOMP) would be:
+Output:
 ```
 joshuastephenson@~/Projects/Wordle-Solver$ ./wordle-sample.py 
 Your next guess should be: STOWP
@@ -62,7 +63,8 @@ solver.miss("w")
 solver.hit("t", 2)
 solver.hit("p", 5)
 ```
-Then output would be:
+
+Output:
 ```
 Your next guess should be: STOUP
 All options:
