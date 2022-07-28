@@ -30,8 +30,9 @@ solved: TRAWL in 3 guesses: ['AROSE', 'GLINT', 'TRAWL']
 ...
 ```
 
-Second, by loading the Solver class into the python shell or another python script, the user can play world receiving advice on which word to guess next. After each guess the user must provide the feedback from the Wordle game (green, yellow and gray letters).
+Second, by loading the Solver class into the python shell or another python script, a player can play Wordle receiving advice on which word to guess next. After each guess the player must provide the feedback from the Wordle game (green, yellow and gray letters).
 
+Example from July 28th (2022) Wordle (answer: STOMP):
 ```
 from WordleSolver import Solver
   
@@ -47,7 +48,7 @@ solver.hit("t")
 solver.guess("stowp")
 ```
 
-Output from July 28th Wordle (answer: STOMP) would be:
+Output:
 ```
 joshuastephenson@~/Projects/Wordle-Solver$ ./wordle-sample.py 
 Your next guess should be: STOWP
@@ -55,14 +56,15 @@ All options:
 ['STOWP', 'SPOUT', 'STOUP', 'STOMP', 'SNOUT', 'STONY', 'STOCK', 'SCOUT', 'SPOTS', 'STOOP', 'STOPS', 'STOPT', 'SNOOT', 'SNOTS', 'STOIC', 'STOWS', 'SWOTS', 'SCOOT', 'SCOTS', 'STOGY', 'STOOK', 'STOUT', 'SOOTY', 'STOBS', 'STOOD', 'SOOTS', 'STOSS', 'STOTS', 'STOTT', 'SWOUN', 'SNOWY', 'SNOOP', 'SPOON', 'SWOOP', 'SWOPS', 'SCOOP', 'SCOPS', 'SNOWS', 'SWOON', 'SPOOK', 'SMOCK', 'SNOOK', 'SCOWS', 'SPOOF', 'SNOBS', 'SNOGS', 'SMOKY', 'SNOOD', 'SWOBS', 'SCOFF', 'SMOGS', 'SOOKS']
 ```
 
-After guessing STOMP
+Then, guessing STOWP
 ```
 solver.guess("stowp")
 solver.miss("w")
 solver.hit("t", 2)
 solver.hit("p", 5)
 ```
-Then output would be:
+
+Output:
 ```
 Your next guess should be: STOUP
 All options:
@@ -72,7 +74,7 @@ All options:
 This demonstrates a good area for improvement. Clearly STOMP is a better guess than STOUP or STOOP, but we can't know this without knowing the frequency of five letter words in the English language which would require another dataset.
 
 ## The Algorithm
-The algorithm has two distinct word lists, that are initially populated from `wordle-dictionary.txt` which is a scrabble dictionary ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)).:
+The algorithm has two distinct word lists, that are initially populated from `wordle-dictionary.txt` which is a scrabble dictionary ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)):
 1. First it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in previous guesses. As each guess is made (and the algorithm receives or generates feedback on the hits/misses from that guess) the possible exclusive guesses are trimmed.
 2. As soon as there are fewer inclusive guesses than exclusive guesses to be made (takes roughly 3 guesses) the algorithm switches to using inclusive guesses. A list of exclusive words is continually pruned to only include those with letters that have been matched so far.
 
