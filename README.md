@@ -34,33 +34,51 @@ Second, by loading the Solver class into the python shell or another python scri
 
 ```
 from WordleSolver import Solver
- 
- solver = Solver()
- solver.guess("irate")
- solver.miss("irae")
- solver.hit("t", 4)
- solver.guess("clots")
- solver.hit("o")
- solver.miss("cls")
- solver.guess("punto")
- solver.hit("o", 5)
- solver.miss("pun")
+  
+solver = Solver()
+solver.guess("arose")
+solver.miss("are")
+olver.hit("o", 3)
+solver.hit("s")
+solver.guess("sloth")
+solver.miss("lh")
+solver.hit("s", 1)
+solver.hit("t")
+solver.guess("stowp")
 ```
 
-Output from July 27th Wordle would be:
+Output from July 28th Wordle (answer: STOMP) would be:
 ```
 joshuastephenson@~/Projects/Wordle-Solver$ ./wordle-sample.py 
-YOUR NEXT GUESS SHOULD BE: PUNTO
+Your next guess should be: STOWP
+All options:
+['STOWP', 'SPOUT', 'STOUP', 'STOMP', 'SNOUT', 'STONY', 'STOCK', 'SCOUT', 'SPOTS', 'STOOP', 'STOPS', 'STOPT', 'SNOOT', 'SNOTS', 'STOIC', 'STOWS', 'SWOTS', 'SCOOT', 'SCOTS', 'STOGY', 'STOOK', 'STOUT', 'SOOTY', 'STOBS', 'STOOD', 'SOOTS', 'STOSS', 'STOTS', 'STOTT', 'SWOUN', 'SNOWY', 'SNOOP', 'SPOON', 'SWOOP', 'SWOPS', 'SCOOP', 'SCOPS', 'SNOWS', 'SWOON', 'SPOOK', 'SMOCK', 'SNOOK', 'SCOWS', 'SPOOF', 'SNOBS', 'SNOGS', 'SMOKY', 'SNOOD', 'SWOBS', 'SCOFF', 'SMOGS', 'SOOKS']
 ```
 
+After guessing STOMP
+```
+solver.guess("stowp")
+solver.miss("w")
+solver.hit("t", 2)
+solver.hit("p", 5)
+```
+Then output would be:
+```
+Your next guess should be: STOUP
+All options:
+['STOUP', 'STOMP', 'STOOP']
+```
+
+This demonstrates a good area for improvement. Clearly STOMP is a better guess than STOUP or STOOP, but we can't know this without knowing the frequency of five letter words in the English language which would require another dataset.
+
 ## The Algorithm
-The algorithm has two distinct word lists:
+The algorithm has two distinct word lists, that are initially populated from `wordle-dictionary.txt` which is a scrabble dictionary ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)).:
 1. First it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in previous guesses. As each guess is made (and the algorithm receives or generates feedback on the hits/misses from that guess) the possible exclusive guesses are trimmed.
 2. As soon as there are fewer inclusive guesses than exclusive guesses to be made (takes roughly 3 guesses) the algorithm switches to using inclusive guesses. A list of exclusive words is continually pruned to only include those with letters that have been matched so far.
 
-As the inclusive word list is updated, the frequency of letters is continually updated and then both word lists are resorted based on the composition of the new letter frequency. This ensures that each guess cuts the word list down maximally.
+As the inclusive word list is updated, the frequency of letters available in the inclusive list is continually updated and then both word lists are resorted based on the composition of the new letter frequency. This ensures that each guess cuts the word list down maximally.
 
-The potential words that populate both of these lists initially is built from a list of 5 letter words passed in from either  `/usr/share/dict/words` on OSX systems or `wordle-dictionary.txt` included in this repository ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)). The words will be sorted in decreasing order by the frequency of their letters in the English language. That frequency is "EARIOTNSLCUDPMHGBFYWKVXZJQ" [found here](https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html) and then given a score. Duplicate letters are intrinsically detrimental to the score of guesses. This ensures that whenever we have multiple options we pick the one with the highest likelihood of being the target word.
+The words are sorted in decreasing order by the frequency of their letters within the remaining inclusive word list and then given an overall word score. Duplicate letters are intrinsically detrimental to the score of words. This ensures that whenever we have multiple options we pick the one with the highest likelihood of being the target word.
 
 ## Performance
 ![WordleSolverResults](https://user-images.githubusercontent.com/11002/181620483-e959c8c4-8916-4e9e-bbe5-46bfe5462a85.png)
