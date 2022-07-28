@@ -11,17 +11,26 @@ The current version can be used in 2 different ways:
 First, by running the script directly it will parse a list of recent Wordle words and solve them, printing out the words it used to guess and total number of guesses
 
 ```
-solved: CIGAR in 4 guesses: ['AROSE', 'DICTY', 'JUGUM', 'CIGAR']
-solved: REBUT in 6 guesses: ['AROSE', 'TUMID', 'LYNCH', 'BRUTE', 'BURET', 'REBUT']
-solved: SISSY in 6 guesses: ['AROSE', 'WHITY', 'PLUMB', 'CISSY', 'KISSY', 'SISSY']
-solved: HUMPH in 5 guesses: ['AROSE', 'UNLIT', 'PYGMY', 'BUMPH', 'HUMPH']
-solved: AWAKE in 4 guesses: ['AROSE', 'GLINT', 'MUCKY', 'AWAKE']
-solved: BLUSH in 4 guesses: ['AROSE', 'WHITY', 'PLUMB', 'BLUSH']
-solved: FOCAL in 4 guesses: ['AROSE', 'GLINT', 'DUCHY', 'FOCAL']
-solved: EVADE in 6 guesses: ['AROSE', 'BLIND', 'CHUMP', 'FADGE', 'DEAVE', 'EVADE']
-solved: NAVAL in 6 guesses: ['AROSE', 'LINTY', 'CHUCK', 'BLAND', 'ALANG', 'NAVAL']
-solved: SERVE in 5 guesses: ['AROSE', 'INPUT', 'GHYLL', 'SCREE', 'SERVE']
-solved: HEATH in 5 guesses: ['AROSE', 'LINTY', 'CHUMP', 'DEATH', 'HEATH']
+solved: LOUSE in 3 guesses: ['AROSE', 'TULIP', 'LOUSE']
+solved: GULCH in 4 guesses: ['AROSE', 'UNLIT', 'PYGMY', 'GULCH']
+solved: VAULT in 6 guesses: ['AROSE', 'LINTY', 'CHUMP', 'FAULT', 'GAULT', 'VAULT']
+solved: GODLY in 4 guesses: ['AROSE', 'LINDY', 'MUTCH', 'GODLY']
+solved: THREW in 4 guesses: ['AROSE', 'TUMID', 'LYNCH', 'THREW']
+solved: FLEET in 4 guesses: ['AROSE', 'LINDY', 'BUTCH', 'FLEET']
+solved: GRAVE in 4 guesses: ['AROSE', 'GLINT', 'DUCKY', 'GRAVE']
+solved: INANE in 6 guesses: ['AROSE', 'LINTY', 'JUGUM', 'NAIVE', 'AZINE', 'INANE']
+solved: SHOCK in 4 guesses: ['AROSE', 'CLIPT', 'FUNKY', 'SHOCK']
+solved: CRAVE in 4 guesses: ['AROSE', 'GLINT', 'DUCKY', 'CRAVE']
+solved: SPITE in 5 guesses: ['AROSE', 'UNLIT', 'PYGMY', 'PISTE', 'SPITE']
+solved: VALVE in 6 guesses: ['AROSE', 'LINTY', 'BUMPH', 'GLACE', 'LEAVE', 'VALVE']
+solved: SKIMP in 4 guesses: ['AROSE', 'UNLIT', 'PYGMY', 'SKIMP']
+solved: CLAIM in 4 guesses: ['AROSE', 'LINTY', 'CHUMP', 'CLAIM']
+solved: RAINY in 4 guesses: ['AROSE', 'DICTY', 'FLUNG', 'RAINY']
+solved: MUSTY in 4 guesses: ['AROSE', 'UNLIT', 'PYGMY', 'MUSTY']
+solved: PIQUE in 4 guesses: ['AROSE', 'UNLIT', 'PYGMY', 'PIQUE']
+solved: DADDY in 7 guesses: ['AROSE', 'LINTY', 'BUMPH', 'CADGY', 'FADDY', 'WADDY', 'DADDY']
+solved: QUASI in 4 guesses: ['AROSE', 'MILTY', 'PUNCH', 'QUASI']
+solved: ARISE in 4 guesses: ['AROSE', 'MILTY', 'DUNCH', 'ARISE']
 ...
 ```
 
@@ -56,9 +65,17 @@ The algorithm has two distinct word lists:
 The potential words that populate both of these lists initially is built from a list of 5 letter words passed in from either  `/usr/share/dict/words` on OSX systems or `wordle-dictionary.txt` included in this repository ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)). The words will be sorted in decreasing order by the frequency of their letters in the English language. That frequency is "EARIOTNSLCUDPMHGBFYWKVXZJQ" [found here](https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html) and then given a score. Duplicate letters are intrinsically detrimental to the score of guesses. This ensures that whenever we have multiple options we pick the one with the highest likelihood of being the target word.
 
 ## Performance
-Out of 383 previous Wordle puzzles, this algorithm solved:
-- 216 (56%) in 4 guesses
-- 112 (29%) in 5 guesses
-- 38  (10%) in 6 guesses
-- 15  (4%)  in 7 guesses
-- 2   (.5%) in 8 guesses
+![WordleSolverResults](https://user-images.githubusercontent.com/11002/181612268-410e7b69-2970-4764-955a-b55004a765a2.png)
+
+Out of 926 previous Wordle puzzles (included in "wordle-answers.txt" file), this algorithm solved 97.4% in 6 guesses or less with 82.5% in 4-5 guesses.
+```
+- 1   (0.1%) in 2 guesses (UNLIT)
+- 2   (0.2%) in 3 guesses (LOUSE, HOUSE)
+- 505 (55%)  in 4 guesses
+- 259 (28%)  in 5 guesses
+- 101 (11%)  in 6 guesses
+- 41  (4.4%) in 7 guesses
+- 11  (1.1%) in 8 guesses (KITTY, VISTA, RELAX, BOSOM, BOOBY, SPILL, SEVER, TAUNT, PARER, VALET, EAGLE)
+- 4   (0.4%) in 9 guesses (SLEEP, RESET, RIVER, USURP)
+- 2   (0.2%) in 10 guesses (SPELL, SAFER)
+```
