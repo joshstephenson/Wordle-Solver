@@ -201,15 +201,21 @@ class Data:
     def _exclusive_guess(self):
         return self._exclusive[0]
 
+    def _should_use_exclusive(self):
+#        return len(self._exclusive) > 0
+        print("EXCLUSIVE: " + str(len(self._exclusive)) + ", INCLUSIVE: " + str(len(self._inclusive)))
+        return len(self._exclusive) > 0 and len(self.guesses) < 2
+
     def next_guess(self, inclusive = False):
         guess = None
-        if inclusive == False and len(self._exclusive) > 0:
+        if inclusive == False and self._should_use_exclusive():
             guess = self._exclusive_guess()
         if guess is None:
+            #print(self._inclusive)
             guess = self._inclusive_guess()
             inclusive = True
 
-#        print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
+        #print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
 
         return guess
 
@@ -245,8 +251,6 @@ class Solver:
         self._is_solved = False
 
     def _process_guess(self, guess):
-
-
         index = 0
         for letter in guess:
             # This gives us ALL the positions of a matching letter
@@ -302,12 +306,12 @@ class Solver:
         return self.data.matches(inclusive)
 
 
-#solution = Solver("KARMA").solve()
+#solution = Solver("ASSET").solve()
 #print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
 #print(solution.guesses)
 
 count = 0
-with open("wordle-dictionary.txt", 'r') as words:
+with open("wordle-answers.txt", 'r') as words:
     for word in words:
         if count < 100:
             count += 1
