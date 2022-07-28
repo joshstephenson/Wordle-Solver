@@ -55,5 +55,10 @@ The algorithm has two distinct word lists:
 
 The potential words that populate both of these lists initially is built from a list of 5 letter words passed in from either  `/usr/share/dict/words` on OSX systems or `wordle-dictionary.txt` included in this repository ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)). The words will be sorted in decreasing order by the frequency of their letters in the English language. That frequency is "EARIOTNSLCUDPMHGBFYWKVXZJQ" [found here](https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html) and then given a score. Duplicate letters are intrinsically detrimental to the score of guesses. This ensures that whenever we have multiple options we pick the one with the highest likelihood of being the target word.
 
-This algorithm can solve 90% of wordle puzzles in 4-6 guesses and the rest in 7 in worst case. 
-
+## Performance
+Out of 383 previous Wordle puzzles, this algorithm solved:
+- 216 (56%) in 4 guesses
+- 112 (29%) in 5 guesses
+- 38  (10%) in 6 guesses
+- 15  (4%)  in 7 guesses
+- 2.  (.5%) in 8 guesses
