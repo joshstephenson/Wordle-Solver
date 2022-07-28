@@ -61,4 +61,4 @@ Out of 383 previous Wordle puzzles, this algorithm solved:
 - 112 (29%) in 5 guesses
 - 38  (10%) in 6 guesses
 - 15  (4%)  in 7 guesses
-- 2.  (.5%) in 8 guesses
+- 2   (.5%) in 8 guesses
