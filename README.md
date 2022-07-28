@@ -1,10 +1,12 @@
 # Python Wordle Solver
 
+## What is Wordle?
 This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/games/wordle/index.html) in least possible guesses. Wordle is a 5-letter word guessing game where the player must guess a word in six guesses. For each guess, the player enters a 5-letter word and receives feedback. Feedback includes:
 - letters in the word but not in correct position (yellow)
 - letters in the word and in the correct position (green)
 - letters not in the word at all (gray)
 
+## Usage
 The current version can be used in 2 different ways:
 First, by running the script directly it will parse a list of recent Wordle words and solve them, printing out the words it used to guess and total number of guesses
 
@@ -50,7 +52,7 @@ The potential words that populate both of these lists initially is built from a 
 
 This algorithm can solve 90% of wordle puzzles in 3-5 guesses and the rest in 9 in worst case. 
 
-### IMPERFECTIONS
+## KNOWN ISSUES
 Based on the scoring, the solver always starts with "IRATE", "CLONS" and "DUMPY". This clears the exclusive stack in three guesses and hands over the algorithm to guesses that match letters guessed.
 
 Words with duplicate letters, such as "SERVE" or "ASSET" have proven to be problematic for initial implementations.
