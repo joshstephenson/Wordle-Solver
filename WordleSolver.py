@@ -1,4 +1,21 @@
-#!/Library/Frameworks/Python.framework/Versions/Current/bin/python3
+# INITIAL STATE:
+# - matches is empty
+# - guesses is empty
+# - inclusive is empty (no matches)
+# - exclusive is all words
+#
+# START by making a guess from highest scored words in exclusive
+# - find matching letters and add to `matches` dictionary
+# - value will be the position of "in position" letters or -1 for out of position letters
+# PROCEED by making an EXCLUSIVE GUESS
+# - only look for words with NO matching letters to narrow down letters faster
+# - e.g. - if letter "R" is matched, then only words without R will be guessed
+# AFTER EACH EXCLUSIVE GUESS:
+# - all words that have matching letters are added to `inclusive`
+# - all words that have matching letters are removed from `exclusive`
+# WHEN EXCLUSIVE MATCHES HAVE BEEN EXHAUSTED
+# - switch to inclusive guesses
+
 import re
 
 #DICTIONARY = "/usr/share/dict/words"
@@ -44,28 +61,17 @@ def _sort_by_score(words, frequency):
 
     return sorted_word_arr
 
-# length of the string should equal the length of items in a set after splitting word into letters and adding to set
-def _has_redundancy(guess):
-    letters = [letter for letter in guess]
-    return len(guess) != len(set(letters))
+def _get_words(file=DICTIONARY):
+    word_arr = []
 
-# INITIAL STATE:
-# - matches is empty
-# - guesses is empty
-# - inclusive is empty (no matches)
-# - exclusive is all words
-#
-# START by making a guess from highest scored words in exclusive
-# - find matching letters and add to `matches` dictionary
-# - value will be the position of "in position" letters or -1 for out of position letters
-# PROCEED by making an EXCLUSIVE GUESS
-# - only look for words with NO matching letters to narrow down letters faster
-# - e.g. - if letter "R" is matched, then only words without R will be guessed
-# AFTER EACH EXCLUSIVE GUESS:
-# - all words that have matching letters are added to `inclusive`
-# - all words that have matching letters are removed from `exclusive`
-# WHEN EXCLUSIVE MATCHES HAVE BEEN EXHAUSTED
-# - switch to inclusive guesses
+    # Open dictionary and save words with correct length
+    with open(file, 'r') as words:
+        for line in words:
+            word = line.strip().upper()
+            if len(word) == LENGTH:
+                word_arr.append(word)
+
+    return word_arr
 
 class Data:
     class Letters:
@@ -84,7 +90,6 @@ class Data:
 
             self.letter_count = 0
 
-            self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
 
         def hit(self, letter, position):
             self.use(letter)
@@ -107,8 +112,6 @@ class Data:
 
         def use(self, letter):
             self._used.add(letter)
-            if letter in self._unused:
-                self._unused.remove(letter)
 
         def matching(self):
             matching = self.green.copy()
@@ -116,29 +119,13 @@ class Data:
                 matching[letter] = [-1]
             return matching
 
-        # returns a unique list of letters found in word list
-        def letters_found_in(self, word_list):
-            letters = set()
-            for word in word_list:
-                for letter in word:
-                    letters.add(letter)
-            return letters
-
-        # first and second must be sets
-        def letters_in_common(self, first, second):
-            common = first.intersection(second)
-            return common
-
         def used(self):
             return self._used
-
-        def unused(self):
-            return self._unused
 
     def __init__(self):
         self.letters = Data.Letters()
 
-        words = _sort_by_score(self._get_words(), None)
+        words = _sort_by_score(_get_words(), None)
 
         # words that will match against letter matches above irrespective of position
         self._inclusive = words.copy()
@@ -224,23 +211,12 @@ class Data:
         self._exclusive = _sort_by_score(self._exclusive, _generate_letter_scores(self._inclusive))
 
     def _inclusive_guess(self):
-        guess = None
-        while guess is None:
-            if len(self._inclusive) == 0:
-                raise "No Inclusive Guesses Left"
-            else:
-                guess = self._inclusive[0]
-
-        return guess
+        return self._inclusive[0]
 
     def _exclusive_guess(self):
         return self._exclusive[0]
 
     def _should_use_exclusive(self):
-#        if len(self._inclusive) < 3:
-#            print(self._inclusive)
-#            return False
-#        else:
         return len(self._inclusive) > 3 and len(self._exclusive) > 0 and len(self._exclusive) > len(self._inclusive)
 
     def next_guess(self, inclusive = False):
@@ -255,18 +231,6 @@ class Data:
 #        print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
 
         return guess
-
-    def _get_words(self, file=DICTIONARY):
-        word_arr = []
-
-        # Open dictionary and save words with correct length
-        with open(file, 'r') as words:
-            for line in words:
-                word = line.strip().upper()
-                if len(word) == LENGTH:
-                    word_arr.append(word)
-
-        return word_arr
 
     def matches(self, inclusive = False):
         if inclusive:
