@@ -6,34 +6,36 @@ DICTIONARY = "./wordle-dictionary.txt"
 LENGTH = 5
 PENALTY_FOR_LETTER_REDUNDANCY = 0
 
-# We will attempt to pict words with most frequently used letters first
-# https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-LFREQ = [l for l in "EARIOTNSLCUDPMHGBFYWKVXZJQ"]
-
-# FRDICT dictionary will map letters to points. Those with most frequency get most points.
-# Words can then have points based on frequency of characters
-FRDICT = dict()
-for i in range(len(LFREQ)):
-    FRDICT[LFREQ[i]] = (26-i)*5
-
 # generate a score for words based on composition of letters and their frequency in English
 # Don't give points to duplicate letters becaues they don't help in guessing
 # Perhaps give negative value for duplicate letters
-def _get_word_points(word):
+def _get_word_points(word, frequency_dict):
     points = 0
     letters = []
     for letter in word:
-        if letter not in letters:
-            points += FRDICT[letter]
-        else:
-            points -= PENALTY_FOR_LETTER_REDUNDANCY # minus 10 points for duplicate letters, 10 is fairly arbitrary here
+        if letter not in letters and letter in frequency_dict:
+            points += frequency_dict[letter]
         letters.append(letter)
     return points
 
-def _sort_by_score(words):
+def _generate_letter_scores(words):
+    frequency = dict()
+    for word in words:
+        for letter in word:
+            if letter not in frequency:
+                frequency[letter] = 1
+            else:
+                frequency[letter] +=1
+
+    letters_by_frequency = dict(sorted(frequency.items(), key = lambda item: item[1], reverse = True))
+    return letters_by_frequency
+
+def _sort_by_score(words, frequency):
+    if frequency is None:
+        frequency = _generate_letter_scores(words)
     word_dict = dict()
     for word in words:
-        word_dict[word] = _get_word_points(word)
+        word_dict[word] = _get_word_points(word, frequency)
 
     sorted_word_dict = sorted(word_dict.items(), key=lambda item: item[1], reverse=True)
     sorted_word_arr = []
@@ -109,7 +111,10 @@ class Data:
                 self._unused.remove(letter)
 
         def matching(self):
-            return self.yellow.union(set(self.green.keys()))
+            matching = self.green.copy()
+            for letter in self.yellow:
+                matching[letter] = [-1]
+            return matching
 
         # returns a unique list of letters found in word list
         def letters_found_in(self, word_list):
@@ -132,16 +137,14 @@ class Data:
 
     def __init__(self):
         self.letters = Data.Letters()
-        words = self._get_words()
 
-        # words in the dictionary
-        self._words = words.copy()
+        words = _sort_by_score(self._get_words(), None)
 
         # words that will match against letter matches above irrespective of position
-        self._inclusive = _sort_by_score(words.copy())
+        self._inclusive = words.copy()
 
         # words that will not match against any letters in matches
-        self._exclusive = _sort_by_score(words.copy())
+        self._exclusive = words.copy()
 
         # words we have guessed
         self.guesses = []
@@ -204,14 +207,11 @@ class Data:
                             dropped_word = True
                             break
 
+        self._inclusive = _sort_by_score(self._inclusive, None)
+
     def _prune_exclusive(self):
         # remove words from exclusive if used letters ARE in the word
         exclusive = self._exclusive.copy()
-        inclusive_letters = self.letters.letters_found_in(self._inclusive)
-        unused_letters = self.letters.unused()
-        letters_to_discount = unused_letters - inclusive_letters
-        print(str(len(self._exclusive)) + "." + str(len(self._inclusive)) + " inc: " + str(inclusive_letters) + ", unused: " + str(unused_letters) + ", discount: " + str(letters_to_discount))
-
         for word in exclusive:
             is_dropped = False
             for letter in self.letters.used():
@@ -219,15 +219,9 @@ class Data:
                     self._exclusive.remove(word)
                     is_dropped = True
                     break
-            # Remove words from exclusive if used letters are not in inclusive words
-            if not is_dropped:
-                for letter in letters_to_discount:
-                    if re.search(letter, word) is not None:
-                        print("DROPPING: " + word)
-                        self._exclusive.remove(word)
-                        is_dropped = True
-                        break
 
+        # Now sort exclusive guesses based on frequency of remaining words in inclusive
+        self._exclusive = _sort_by_score(self._exclusive, _generate_letter_scores(self._inclusive))
 
     def _inclusive_guess(self):
         guess = None
@@ -243,8 +237,11 @@ class Data:
         return self._exclusive[0]
 
     def _should_use_exclusive(self):
-#        print("EXCLUSIVE: " + str(len(self._exclusive)) + ", INCLUSIVE: " + str(len(self._inclusive)))
-        return len(self._exclusive) > 0 and len(self.guesses) < 3
+#        if len(self._inclusive) < 3:
+#            print(self._inclusive)
+#            return False
+#        else:
+        return len(self._inclusive) > 3 and len(self._exclusive) > 0 and len(self._exclusive) > len(self._inclusive)
 
     def next_guess(self, inclusive = False):
         guess = None
@@ -255,7 +252,7 @@ class Data:
             guess = self._inclusive_guess()
             inclusive = True
 
-        #print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
+#        print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
 
         return guess
 
@@ -314,7 +311,6 @@ class Solver:
 
             index += 1
 
-
     def solve(self):
         guess = self.data.next_guess()
         while not self._is_solved:
@@ -324,7 +320,6 @@ class Solver:
                 self._is_solved = True
                 break
             else:
-                print("GUESS: " + guess)
                 self._process_guess(guess)
                 guess = self.data.next_guess()
 
@@ -345,17 +340,4 @@ class Solver:
 
     def matches(self, inclusive = False):
         return self.data.matches(inclusive)
-
-
-solution = Solver("ASSET").solve()
-print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
-print(solution.guesses)
-
-#count = 0
-#with open("wordle-answers.txt", 'r') as words:
-#    for word in words:
-#        if count < 100:
-#            count += 1
-#            solution = Solver(word.strip()).solve()
-#            print("solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
 
