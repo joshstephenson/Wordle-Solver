@@ -56,7 +56,7 @@ All options:
 ['STOWP', 'SPOUT', 'STOUP', 'STOMP', 'SNOUT', 'STONY', 'STOCK', 'SCOUT', 'SPOTS', 'STOOP', 'STOPS', 'STOPT', 'SNOOT', 'SNOTS', 'STOIC', 'STOWS', 'SWOTS', 'SCOOT', 'SCOTS', 'STOGY', 'STOOK', 'STOUT', 'SOOTY', 'STOBS', 'STOOD', 'SOOTS', 'STOSS', 'STOTS', 'STOTT', 'SWOUN', 'SNOWY', 'SNOOP', 'SPOON', 'SWOOP', 'SWOPS', 'SCOOP', 'SCOPS', 'SNOWS', 'SWOON', 'SPOOK', 'SMOCK', 'SNOOK', 'SCOWS', 'SPOOF', 'SNOBS', 'SNOGS', 'SMOKY', 'SNOOD', 'SWOBS', 'SCOFF', 'SMOGS', 'SOOKS']
 ```
 
-After guessing STOMP
+Then, guessing STOWP
 ```
 solver.guess("stowp")
 solver.miss("w")
