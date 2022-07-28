@@ -78,12 +78,14 @@ class Data:
             self.gray   = set()
 
             # letters used in guesses
-            self.used   = set()
+            self._used   = set()
 
             self.letter_count = 0
 
+            self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
+
         def hit(self, letter, position):
-            self.used.add(letter)
+            self.use(letter)
             if position > -1:
                 if letter not in self.green:
                     self.green[letter] = []
@@ -99,10 +101,34 @@ class Data:
 
         def miss(self, letter):
             self.gray.add(letter)
-            self.used.add(letter)
+            self.use(letter)
+
+        def use(self, letter):
+            self._used.add(letter)
+            if letter in self._unused:
+                self._unused.remove(letter)
 
         def matching(self):
             return self.yellow.union(set(self.green.keys()))
+
+        # returns a unique list of letters found in word list
+        def letters_found_in(self, word_list):
+            letters = set()
+            for word in word_list:
+                for letter in word:
+                    letters.add(letter)
+            return letters
+
+        # first and second must be sets
+        def letters_in_common(self, first, second):
+            common = first.intersection(second)
+            return common
+
+        def used(self):
+            return self._used
+
+        def unused(self):
+            return self._unused
 
     def __init__(self):
         self.letters = Data.Letters()
@@ -181,14 +207,29 @@ class Data:
     def _prune_exclusive(self):
         # remove words from exclusive if used letters ARE in the word
         exclusive = self._exclusive.copy()
+        inclusive_letters = self.letters.letters_found_in(self._inclusive)
+        unused_letters = self.letters.unused()
+        letters_to_discount = unused_letters - inclusive_letters
+        print(str(len(self._exclusive)) + "." + str(len(self._inclusive)) + " inc: " + str(inclusive_letters) + ", unused: " + str(unused_letters) + ", discount: " + str(letters_to_discount))
+
         for word in exclusive:
-            for letter in self.letters.used:
+            is_dropped = False
+            for letter in self.letters.used():
                 if re.search(letter, word) is not None:
                     self._exclusive.remove(word)
+                    is_dropped = True
                     break
+            # Remove words from exclusive if used letters are not in inclusive words
+            if not is_dropped:
+                for letter in letters_to_discount:
+                    if re.search(letter, word) is not None:
+                        print("DROPPING: " + word)
+                        self._exclusive.remove(word)
+                        is_dropped = True
+                        break
+
 
     def _inclusive_guess(self):
-        target_count = self.letters.letter_count
         guess = None
         while guess is None:
             if len(self._inclusive) == 0:
@@ -202,9 +243,8 @@ class Data:
         return self._exclusive[0]
 
     def _should_use_exclusive(self):
-#        return len(self._exclusive) > 0
-        print("EXCLUSIVE: " + str(len(self._exclusive)) + ", INCLUSIVE: " + str(len(self._inclusive)))
-        return len(self._exclusive) > 0 and len(self.guesses) < 2
+#        print("EXCLUSIVE: " + str(len(self._exclusive)) + ", INCLUSIVE: " + str(len(self._inclusive)))
+        return len(self._exclusive) > 0 and len(self.guesses) < 3
 
     def next_guess(self, inclusive = False):
         guess = None
@@ -284,6 +324,7 @@ class Solver:
                 self._is_solved = True
                 break
             else:
+                print("GUESS: " + guess)
                 self._process_guess(guess)
                 guess = self.data.next_guess()
 
@@ -306,15 +347,15 @@ class Solver:
         return self.data.matches(inclusive)
 
 
-#solution = Solver("ASSET").solve()
-#print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
-#print(solution.guesses)
+solution = Solver("ASSET").solve()
+print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
+print(solution.guesses)
 
-count = 0
-with open("wordle-answers.txt", 'r') as words:
-    for word in words:
-        if count < 100:
-            count += 1
-            solution = Solver(word.strip()).solve()
-            print("solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
+#count = 0
+#with open("wordle-answers.txt", 'r') as words:
+#    for word in words:
+#        if count < 100:
+#            count += 1
+#            solution = Solver(word.strip()).solve()
+#            print("solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: " + str(solution.guesses))
 
