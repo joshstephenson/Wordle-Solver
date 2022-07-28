@@ -74,7 +74,7 @@ All options:
 This demonstrates a good area for improvement. Clearly STOMP is a better guess than STOUP or STOOP, but we can't know this without knowing the frequency of five letter words in the English language which would require another dataset.
 
 ## The Algorithm
-The algorithm has two distinct word lists, that are initially populated from `wordle-dictionary.txt` which is a scrabble dictionary ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)).:
+The algorithm has two distinct word lists, that are initially populated from `wordle-dictionary.txt` which is a scrabble dictionary ([originally found here](https://github.com/redbo/scrabble/blob/master/dictionary.txt)):
 1. First it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in previous guesses. As each guess is made (and the algorithm receives or generates feedback on the hits/misses from that guess) the possible exclusive guesses are trimmed.
 2. As soon as there are fewer inclusive guesses than exclusive guesses to be made (takes roughly 3 guesses) the algorithm switches to using inclusive guesses. A list of exclusive words is continually pruned to only include those with letters that have been matched so far.
 
