@@ -19,7 +19,8 @@
 import re
 
 #DICTIONARY = "/usr/share/dict/words"
-DICTIONARY = "./wordle-dictionary.txt"
+GUESSING_DICTIONARY = "./nyt-guesses.txt"
+ANSWER_DICTIONARY = "./nyt-answers.txt"
 LENGTH = 5
 PENALTY_FOR_LETTER_REDUNDANCY = 0
 
@@ -61,7 +62,7 @@ def _sort_by_score(words, frequency):
 
     return sorted_word_arr
 
-def _get_words(file=DICTIONARY):
+def _get_words(file):
     word_arr = []
 
     # Open dictionary and save words with correct length
@@ -125,13 +126,12 @@ class Data:
     def __init__(self):
         self.letters = Data.Letters()
 
-        words = _sort_by_score(_get_words(), None)
-
         # words that will match against letter matches above irrespective of position
-        self._inclusive = words.copy()
+        self._answer_words = _sort_by_score(_get_words(ANSWER_DICTIONARY), None)
 
         # words that will not match against any letters in matches
-        self._exclusive = words.copy()
+        self._guess_words = _sort_by_score(_get_words(GUESSING_DICTIONARY), _generate_letter_scores(self._answer_words))
+        self._pruned_guess_words = _sort_by_score(_get_words(GUESSING_DICTIONARY), _generate_letter_scores(self._answer_words))
 
         # words we have guessed
         self.guesses = []
@@ -139,41 +139,38 @@ class Data:
     # Only way to add a match from another class
     def hit(self, letter, position):
         self.letters.hit(letter, position)
-        self._prune(False)
-        self._prune(True)
 
     def miss(self, letter):
         self.letters.miss(letter)
-        self._prune()
-        inclusive = self._inclusive.copy()
-        for word in inclusive:
+        answers = self._answer_words.copy()
+        for word in answers:
             # Remove all words that have letters we know don't match
             if re.search(letter, word) is not None:
-                self._inclusive.remove(word)
+                self._answer_words.remove(word)
 
     def add_guess(self, guess):
         self.guesses.append(guess)
-        if guess in self._exclusive:
-            self._exclusive.remove(guess)
-        if guess in self._inclusive:
-            self._inclusive.remove(guess)
+        if guess in self._pruned_guess_words:
+            self._pruned_guess_words.remove(guess)
+        if guess in self._answer_words:
+            self._answer_words.remove(guess)
 
 
-    def _prune(self, inclusive = False):
-        if inclusive:
-            self._prune_inclusive()
-        else:
-            self._prune_exclusive()
+    def _prune(self):
+        if self.letters.used() == 0:
+            return
+        self._prune_answer_words()
+        self._prune_guess_words()
 
-    def _prune_inclusive(self):
-        # remove words from inclusive if we don't have green letters
-        inclusive = self._inclusive.copy()
-        for word in inclusive:
+    def _prune_answer_words(self):
+        # remove words from answers if we don't have green letters
+        answers = self._answer_words.copy()
+        for word in answers:
             dropped_word = False
             if not dropped_word:
                 for letter in self.letters.gray:
                     if re.search(letter, word) is not None:
-                        self._inclusive.remove(word)
+                        self._answer_words.remove(word)
                         dropped_word = True
                         break
             if not dropped_word:
@@ -181,7 +178,7 @@ class Data:
                     if dropped_word:
                         break
                     if re.search(letter, word) is None:
-                        self._inclusive.remove(word)
+                        self._answer_words.remove(word)
                         dropped_word = True
                         break
             if not dropped_word:
@@ -190,53 +187,58 @@ class Data:
                         break
                     for position in self.letters.green[letter]:
                         if word[position] != letter:
-                            self._inclusive.remove(word)
+                            self._answer_words.remove(word)
                             dropped_word = True
                             break
 
-        self._inclusive = _sort_by_score(self._inclusive, None)
+        self._answer_words = _sort_by_score(self._answer_words, None)
 
-    def _prune_exclusive(self):
-        # remove words from exclusive if used letters ARE in the word
-        exclusive = self._exclusive.copy()
-        for word in exclusive:
-            is_dropped = False
-            for letter in self.letters.used():
-                if re.search(letter, word) is not None:
-                    self._exclusive.remove(word)
-                    is_dropped = True
-                    break
+    def _prune_guess_words(self):
+        count_answer = len(self._answer_words)
+        count_guess = len(self._pruned_guess_words)
+        if count_answer > 1 and count_answer > count_guess:
+            print("repopulating guesses")
+            self._pruned_guess_words = _sort_by_score(self._guess_words, _generate_letter_scores(self._answer_words))
+        else:
+            # remove words from exclusive if used letters ARE in the word
+            guess_words = self._pruned_guess_words.copy()
+            for guess in guess_words:
+                for letter in self.letters.used():
+                    if re.search(letter, guess) is not None:
+                        self._pruned_guess_words.remove(guess)
+                        break
 
-        # Now sort exclusive guesses based on frequency of remaining words in inclusive
-        self._exclusive = _sort_by_score(self._exclusive, _generate_letter_scores(self._inclusive))
+            # Now sort exclusive guesses based on frequency of remaining words in answers
+            self._pruned_guess_words = _sort_by_score(self._pruned_guess_words, _generate_letter_scores(self._answer_words))
 
-    def _inclusive_guess(self):
-        return self._inclusive[0]
+    def _next_answer_word(self):
+        return self._answer_words[0]
 
-    def _exclusive_guess(self):
-        return self._exclusive[0]
+    def _next_guess_word(self):
+        return self._pruned_guess_words[0]
 
-    def _should_use_exclusive(self):
-        return len(self._inclusive) > 3 and len(self._exclusive) > 0 and len(self._exclusive) > len(self._inclusive)
+    def _should_attempt_answer(self):
+        should_attempt_anwser = len(self._pruned_guess_words) == 0 or (len(self._answer_words) < 2 and len(self._pruned_guess_words) > 0)
+#        if should_attempt_anwser:
+#            print("ATTEMPTING ANSWER")
+        return should_attempt_anwser
 
-    def next_guess(self, inclusive = False):
+    def next_guess(self, answer = False):
+        self._prune()
         guess = None
-        if inclusive == False and self._should_use_exclusive():
-            guess = self._exclusive_guess()
+        if answer == True or self._should_attempt_answer():
+            guess = self._next_answer_word()
+            answer = True
         if guess is None:
-            #print(self._inclusive)
-            guess = self._inclusive_guess()
-            inclusive = True
-
-#        print(("INCLUSIVE" if inclusive else "EXCLUSIVE") + " guess '" + guess + "' for letters matching: " + str(self.letters.matching()))
+            guess = self._next_guess_word()
 
         return guess
 
-    def matches(self, inclusive = False):
-        if inclusive:
-            return self._inclusive
+    def matches(self, answer = False):
+        if answer:
+            return self._answer_words
         else:
-            return self._exclusive
+            return self._pruned_guess_words
 
 class Solution:
     def __init__(self, guesses):
@@ -299,9 +301,9 @@ class Solver:
     def guess(self, word):
         self.data.add_guess(word.upper())
 
-    def next_guess(self, inclusive = False):
-        return self.data.next_guess(inclusive)
+    def next_guess(self, answer = False):
+        return self.data.next_guess(answer)
 
-    def matches(self, inclusive = False):
-        return self.data.matches(inclusive)
+    def matches(self, answer = False):
+        return self.data.matches(answer)
 
