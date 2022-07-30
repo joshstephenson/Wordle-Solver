@@ -1,23 +1,6 @@
-# INITIAL STATE:
-# - matches is empty
-# - guesses is empty
-# - inclusive is empty (no matches)
-# - exclusive is all words
-#
-# START by making a guess from highest scored words in exclusive
-# - find matching letters and add to `matches` dictionary
-# - value will be the position of "in position" letters or -1 for out of position letters
-# PROCEED by making an EXCLUSIVE GUESS
-# - only look for words with NO matching letters to narrow down letters faster
-# - e.g. - if letter "R" is matched, then only words without R will be guessed
-# AFTER EACH EXCLUSIVE GUESS:
-# - all words that have matching letters are added to `inclusive`
-# - all words that have matching letters are removed from `exclusive`
-# WHEN EXCLUSIVE MATCHES HAVE BEEN EXHAUSTED
-# - switch to inclusive guesses
-
 import re
 
+LOGGING = False
 #DICTIONARY = "/usr/share/dict/words"
 GUESSING_DICTIONARY = "./nyt-guesses.txt"
 ANSWER_DICTIONARY = "./nyt-answers.txt"
@@ -89,8 +72,9 @@ class Data:
             # letters used in guesses
             self._used   = set()
 
-            self.letter_count = 0
+            self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
 
+            self.letter_count = 0
 
         def hit(self, letter, position):
             self.use(letter)
@@ -113,6 +97,8 @@ class Data:
 
         def use(self, letter):
             self._used.add(letter)
+            if letter in self._unused:
+                self._unused.remove(letter)
 
         def matching(self):
             matching = self.green.copy()
@@ -123,15 +109,92 @@ class Data:
         def used(self):
             return self._used
 
+        def unused(self):
+            return self._unused
+
+    class Words:
+        def __init__(self):
+            self.letters = Data.Letters()
+            self._answers = _sort_by_score(_get_words(ANSWER_DICTIONARY), None)
+            guesses = self._answers.copy()
+            guesses = guesses + _get_words(GUESSING_DICTIONARY)
+            self._guesses = _sort_by_score(guesses, _generate_letter_scores(self._answers))
+
+        def register_guess(self, guess):
+            if guess in self._answers:
+                self._answers.remove(guess)
+            if guess in self._guesses:
+                self._guesses.remove(guess)
+
+        def _update(self):
+            if self.letters.used() == 0:
+                return
+            # always update answers first
+            self._update_answers()
+            self._update_guesses()
+
+        def _update_answers(self):
+            # remove words from answers if we don't have green letters
+            answers = self._answers.copy()
+            for word in answers:
+                dropped_word = False
+                if not dropped_word:
+                    for letter in self.letters.gray:
+                        if re.search(letter, word) is not None:
+                            self._answers.remove(word)
+                            dropped_word = True
+                            break
+                if not dropped_word:
+                    for letter in self.letters.yellow:
+                        if dropped_word:
+                            break
+                        if re.search(letter, word) is None:
+                            self._answers.remove(word)
+                            dropped_word = True
+                            break
+                if not dropped_word:
+                    for letter in self.letters.green.keys():
+                        if dropped_word:
+                            break
+                        for position in self.letters.green[letter]:
+                            if word[position] != letter:
+                                self._answers.remove(word)
+                                dropped_word = True
+                                break
+
+            self._answers = _sort_by_score(self._answers, None)
+
+        def _update_guesses(self):
+            # Remove words from guesses if used letters ARE in the word
+            guesses = self._guesses.copy()
+            for guess in guesses:
+                for letter in self.letters.used():
+                    if re.search(letter, guess) is not None:
+                        self._guesses.remove(guess)
+                        break
+
+            # Now sort exclusive guesses based on frequency of remaining words in answers
+            self._guesses = _sort_by_score(self._guesses, _generate_letter_scores(self._answers))
+
+        def next_guess(self, answer = False):
+            self._update()
+            guess = None
+
+            if len(self._answers) == 1:
+                guess = self._answers[0]
+            if guess is None and len(self._guesses) > 0:
+                guess = self._guesses[0]
+            if guess is None:
+                guess = self._answers[0]
+
+            if LOGGING:
+                print("Suggesting: " + guess)
+
+            return guess
+
     def __init__(self):
-        self.letters = Data.Letters()
-
-        # words that will match against letter matches above irrespective of position
-        self._answer_words = _sort_by_score(_get_words(ANSWER_DICTIONARY), None)
-
-        # words that will not match against any letters in matches
-        self._guess_words = _sort_by_score(_get_words(GUESSING_DICTIONARY), _generate_letter_scores(self._answer_words))
-        self._pruned_guess_words = _sort_by_score(_get_words(GUESSING_DICTIONARY), _generate_letter_scores(self._answer_words))
+        self.words = Data.Words()
+        self.letters = self.words.letters
 
         # words we have guessed
         self.guesses = []
@@ -142,103 +205,19 @@ class Data:
 
     def miss(self, letter):
         self.letters.miss(letter)
-        answers = self._answer_words.copy()
-        for word in answers:
-            # Remove all words that have letters we know don't match
-            if re.search(letter, word) is not None:
-                self._answer_words.remove(word)
 
     def add_guess(self, guess):
         self.guesses.append(guess)
-        if guess in self._pruned_guess_words:
-            self._pruned_guess_words.remove(guess)
-        if guess in self._answer_words:
-            self._answer_words.remove(guess)
-
-
-    def _prune(self):
-        if self.letters.used() == 0:
-            return
-        self._prune_answer_words()
-        self._prune_guess_words()
-
-    def _prune_answer_words(self):
-        # remove words from answers if we don't have green letters
-        answers = self._answer_words.copy()
-        for word in answers:
-            dropped_word = False
-            if not dropped_word:
-                for letter in self.letters.gray:
-                    if re.search(letter, word) is not None:
-                        self._answer_words.remove(word)
-                        dropped_word = True
-                        break
-            if not dropped_word:
-                for letter in self.letters.yellow:
-                    if dropped_word:
-                        break
-                    if re.search(letter, word) is None:
-                        self._answer_words.remove(word)
-                        dropped_word = True
-                        break
-            if not dropped_word:
-                for letter in self.letters.green.keys():
-                    if dropped_word:
-                        break
-                    for position in self.letters.green[letter]:
-                        if word[position] != letter:
-                            self._answer_words.remove(word)
-                            dropped_word = True
-                            break
-
-        self._answer_words = _sort_by_score(self._answer_words, None)
-
-    def _prune_guess_words(self):
-        count_answer = len(self._answer_words)
-        count_guess = len(self._pruned_guess_words)
-        if count_answer > 1 and count_answer > count_guess:
-            print("repopulating guesses")
-            self._pruned_guess_words = _sort_by_score(self._guess_words, _generate_letter_scores(self._answer_words))
-        else:
-            # remove words from exclusive if used letters ARE in the word
-            guess_words = self._pruned_guess_words.copy()
-            for guess in guess_words:
-                for letter in self.letters.used():
-                    if re.search(letter, guess) is not None:
-                        self._pruned_guess_words.remove(guess)
-                        break
-
-            # Now sort exclusive guesses based on frequency of remaining words in answers
-            self._pruned_guess_words = _sort_by_score(self._pruned_guess_words, _generate_letter_scores(self._answer_words))
-
-    def _next_answer_word(self):
-        return self._answer_words[0]
-
-    def _next_guess_word(self):
-        return self._pruned_guess_words[0]
-
-    def _should_attempt_answer(self):
-        should_attempt_anwser = len(self._pruned_guess_words) == 0 or (len(self._answer_words) < 2 and len(self._pruned_guess_words) > 0)
-#        if should_attempt_anwser:
-#            print("ATTEMPTING ANSWER")
-        return should_attempt_anwser
+        self.words.register_guess(guess)
 
     def next_guess(self, answer = False):
-        self._prune()
-        guess = None
-        if answer == True or self._should_attempt_answer():
-            guess = self._next_answer_word()
-            answer = True
-        if guess is None:
-            guess = self._next_guess_word()
-
-        return guess
+        return self.words.next_guess(len(self.guesses) >= 1)
 
     def matches(self, answer = False):
         if answer:
-            return self._answer_words
+            return self.words._answers
         else:
-            return self._pruned_guess_words
+            return self.words._guesses
 
 class Solution:
     def __init__(self, guesses):
@@ -248,7 +227,10 @@ class Solution:
 
 class Solver:
     def __init__(self, target = None):
-        self.target = target
+        if target is not None:
+            self.target = target.upper()
+        else:
+            self.target = None
         self.data = Data()
         self.guesses = []
         self._is_solved = False
@@ -266,11 +248,9 @@ class Solver:
             # if the letter is a hit
             else:
                 for position in results:
-
                     # letter is in correct position
                     if position == index:
                         self.data.hit(letter, position)
-
                     # letter is not in the correct position
                     else:
                         self.data.hit(letter, -1)
@@ -279,6 +259,8 @@ class Solver:
 
     def solve(self):
         guess = self.data.next_guess()
+#        if len(self.guesses) == 0:
+#            guess = "SALET"
         while not self._is_solved:
             # Keep track of words and letters guessed
             self.data.add_guess(guess)
@@ -291,6 +273,7 @@ class Solver:
 
         return Solution(self.data.guesses)
 
+    # The following methods are for the interactive solver
     def hit(self, letter, position = -1):
         self.data.hit(letter.upper(), position-1)
 
