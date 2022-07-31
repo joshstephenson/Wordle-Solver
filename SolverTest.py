@@ -14,33 +14,6 @@ if args.word:
 else:
     count = 0
     scores = dict()
-<<<<<<< Updated upstream
-    answers = dict()
-    score = 0
-    maximum = 0
-    with open("nyt-answers.txt", 'r') as words:
-        for word in words:
-            count += 1
-#            try:
-            solution = Solver(word.strip()).solve()
-#            except BaseException:
-#                print("Exception occurred here")
-#            else:
-            score += solution.guess_count
-            if solution.guess_count > maximum:
-                maximum = solution.guess_count
-            avg = round(score / count, 4)
-            print(str(avg).ljust(6) + " " + solution.word + " " + str(solution.guess_count) + ": " + str(solution.guesses))
-            if solution.guess_count not in scores:
-                scores[solution.guess_count] = 1
-                answers[solution.guess_count] = [solution.word]
-            else:
-                scores[solution.guess_count] += 1
-                answers[solution.guess_count].append(solution.word)
-
-    print(answers)
-    print(scores)
-=======
     score = 0
     maximum = 0
     with open("nyt-answers.txt", 'r') as words:
@@ -62,7 +35,6 @@ else:
             else:
                 scores[solution.guess_count]['count'] += 1
                 scores[solution.guess_count]['words'].append(solution.word)
->>>>>>> Stashed changes
 
     sorted_scores = dict(sorted(scores.items(), key = lambda x: x[0]))
     names = list(sorted_scores.keys())
