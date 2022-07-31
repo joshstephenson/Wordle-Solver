@@ -140,7 +140,7 @@ class Data:
                 dropped_word = False
                 if not dropped_word:
                     for letter in self.letters.gray:
-                        if re.search(letter, word) is not None:
+                        if letter in word:
                             self._answers.remove(word)
                             dropped_word = True
                             break
@@ -148,7 +148,7 @@ class Data:
                     for letter in self.letters.yellow:
                         if dropped_word:
                             break
-                        if re.search(letter, word) is None:
+                        if letter not in word:
                             self._answers.remove(word)
                             dropped_word = True
                             break
@@ -169,14 +169,14 @@ class Data:
             guesses = self._guesses.copy()
             for guess in guesses:
                 for letter in self.letters.used():
-                    if re.search(letter, guess) is not None:
+                    if letter in guess:
                         self._guesses.remove(guess)
                         break
 
             # Now sort exclusive guesses based on frequency of remaining words in answers
             self._guesses = _sort_by_score(self._guesses, _generate_letter_scores(self._answers))
 
-        def next_guess(self, answer = False):
+        def next_guess(self):
             self._update()
             guess = None
 
@@ -210,8 +210,8 @@ class Data:
         self.guesses.append(guess)
         self.words.register_guess(guess)
 
-    def next_guess(self, answer = False):
-        return self.words.next_guess(len(self.guesses) >= 1)
+    def next_guess(self):
+        return self.words.next_guess()
 
     def matches(self, answer = False):
         if answer:
@@ -257,10 +257,8 @@ class Solver:
 
             index += 1
 
-    def solve(self):
-        guess = self.data.next_guess()
-#        if len(self.guesses) == 0:
-#            guess = "SALET"
+    def solve(self, starting_word = None):
+        guess = (starting_word if starting_word is not None else self.data.next_guess())
         while not self._is_solved:
             # Keep track of words and letters guessed
             self.data.add_guess(guess)
@@ -270,6 +268,8 @@ class Solver:
             else:
                 self._process_guess(guess)
                 guess = self.data.next_guess()
+            if LOGGING:
+                print(self.data.letters.matching())
 
         return Solution(self.data.guesses)
 
@@ -284,8 +284,8 @@ class Solver:
     def guess(self, word):
         self.data.add_guess(word.upper())
 
-    def next_guess(self, answer = False):
-        return self.data.next_guess(answer)
+    def next_guess(self, is_start = False):
+        return self.data.next_guess(is_start)
 
     def matches(self, answer = False):
         return self.data.matches(answer)
