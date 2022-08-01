@@ -189,12 +189,13 @@ class Dictionary:
     def intersecting_word(self):
         log(self.answers)
         available_letters = set((letter for letter in ''.join(self.answers)))
-        log(available_letters)
+        log(f'Letters in Answers: {available_letters}')
         to_target = available_letters - set(self.feedback.matching().keys())
         log(f'Target: {to_target}')
         log(self.feedback)
-#        if len(to_target) == 0:
-#            return None
+        count = len(available_letters)
+        if len(to_target) == 0:
+            return None
 
         words = self.all_words.copy()
         pruned = words.copy()
@@ -227,10 +228,10 @@ class Dictionary:
         self._update()
         log(f'Answers: {len(self.answers)}, Exclusive: {len(self.exclusive_words)}')
         guess = None
-        if len(self.answers) > 8 and len(self.exclusive_words) > 0:
+        if len(self.answers) > 50 and len(self.exclusive_words) > 0:
             log("EXCLUSIVE")
             guess = self.exclusive_words[0]
-        elif len(self.answers) > 1:
+        elif len(self.answers) > 6:
             guess = self.intersecting_word()
 
         if guess is None:
@@ -309,7 +310,7 @@ class LetterFeedback:
         return self._unused
 
     def __str__(self):
-        return f'Green: {self.green.keys()}, Yellow: {self.yellow}, Used: {self.used()}, Unused: {self.unused()}'
+        return f'Green: {list(self.green.keys())}, Yellow: {self.yellow}, Used: {self.used()}, Unused: {self.unused()}'
 
 class Puzzle:
     def __init__(self):
