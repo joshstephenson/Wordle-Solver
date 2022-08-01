@@ -1,2 +1,6 @@
 
 *.pyc
+results-*.*
+RegexTest.py
+Test.py
+problem-words.txt
