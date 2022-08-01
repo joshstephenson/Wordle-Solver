@@ -1,2 +1,5 @@
 
 *.pyc
+results-*.txt
+RegexTest.py
+Test.py
