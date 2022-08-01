@@ -61,4 +61,4 @@ else:
     f.close()
 
     plt.barh(range(len(sorted_scores)), values, tick_label=names)
-    plt.savefig(f'{filename}.jpg')
+    plt.savefig(f'{filename}.png')
