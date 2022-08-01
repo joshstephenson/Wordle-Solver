@@ -4,10 +4,11 @@ from WordleSolver import Dictionary
 import matplotlib.pyplot as plt
 import argparse
 
-parser = argparse.ArgumentParser(description='Use --all to test all wordle answers')
+parser = argparse.ArgumentParser(description='Use -d to test a dictionary')
 parser.add_argument('-w', '--word', action="store", dest="word", help="Test one word")
 parser.add_argument('-r', '--rank', action="store", dest="rank", help="Get word rank")
 parser.add_argument('-s', '--score', action="store", dest="score", help="Get word score")
+parser.add_argument('-d', '--dictionary', action="store", dest="dictionary", help="Run a dictionary file")
 args = parser.parse_args()
 if args.rank:
     print(Dictionary().rank_of(args.rank))
@@ -19,13 +20,14 @@ elif args.word:
     print(solution.guesses)
 
 else:
+    dictionary = (args.dictionary if args.dictionary else "nyt-answers.txt")
     count = 0
     scores = dict()
     score = 0
     maximum = 0
     hardest_words = list()
     avg = 0
-    with open("nyt-answers.txt", 'r') as words:
+    with open(dictionary, 'r') as words:
         for word in words:
             count += 1
             solution = Solver(word.strip().upper()).solve()
@@ -51,10 +53,11 @@ else:
         print(str(name) + ": " + words[index])
 
 
-    f = open(f'results-{avg}.txt', "w")
+    filename = f'results-{avg}'
+    f = open(f'{filename}.txt', "w")
     for index, name in enumerate(names):
         f.write(f'{str(name)}: {words[index]}\n')
     f.close()
 
     plt.barh(range(len(sorted_scores)), values, tick_label=names)
-    plt.show()
+    plt.savefig(f'{filename}.jpg')
