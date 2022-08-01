@@ -1,223 +1,285 @@
 import re
+import functools
 
 LOGGING = False
 #DICTIONARY = "/usr/share/dict/words"
 GUESSING_DICTIONARY = "./nyt-guesses.txt"
 ANSWER_DICTIONARY = "./nyt-answers.txt"
-LENGTH = 5
+WORD_LENGTH = 5
 PENALTY_FOR_LETTER_REDUNDANCY = 0
 
-# generate a score for words based on composition of letters and their frequency in English
-# Don't give points to duplicate letters becaues they don't help in guessing
-# Perhaps give negative value for duplicate letters
-def _get_word_points(word, frequency_dict):
-    points = 0
-    letters = []
-    for letter in word:
-        if letter not in letters and letter in frequency_dict:
-            points += frequency_dict[letter]
-        letters.append(letter)
-    return points
+class LetterFrequency:
+    def __init__(self, letter, position):
+        self.letter = letter
+        self.by_position = {0:0,1:0,2:0,3:0,4:0}
+        self.total = 0
+        self.by_position[position] = 1
 
-def _generate_letter_scores(words):
-    frequency = dict()
-    for word in words:
-        for letter in word:
-            if letter not in frequency:
-                frequency[letter] = 1
-            else:
-                frequency[letter] +=1
+    def add(self, position):
+        self.by_position[position] += 1
+        self.total += 1
 
-    letters_by_frequency = dict(sorted(frequency.items(), key = lambda item: item[1], reverse = True))
-    return letters_by_frequency
+    def __getitem__(self, item):
+        return self.by_position[item]
 
-def _sort_by_score(words, frequency):
-    if frequency is None:
-        frequency = _generate_letter_scores(words)
-    word_dict = dict()
-    for word in words:
-        word_dict[word] = _get_word_points(word, frequency)
+    def __repr__(self):
+        return f'{self.letter}:{self.total}:{self.by_position}'
 
-    sorted_word_dict = sorted(word_dict.items(), key=lambda item: item[1], reverse=True)
-    sorted_word_arr = []
-    for word in sorted_word_dict:
-        sorted_word_arr.append(word[0])
+class PositionLetters:
+    def __init__(self, letter, position, score):
+        self.letter = letter
+        self.position = position
+        self.score = score
 
-    return sorted_word_arr
+    def __lt__(self, other):
+        return self.score < other.score
 
-def _get_words(file):
-    word_arr = []
+    def __repr__(self):
+        return f'{self.letter}:{self.score}'
 
-    # Open dictionary and save words with correct length
-    with open(file, 'r') as words:
-        for line in words:
-            word = line.strip().upper()
-            if len(word) == LENGTH:
-                word_arr.append(word)
-
-    return word_arr
-
-class Data:
-    class Letters:
-        def __init__(self):
-            # These are for letters in known position
-            self.green  = dict()
-
-            # letters in the word but in the wrong position
-            self.yellow = set()
-
-            # letters not in the word
-            self.gray   = set()
-
-            # letters used in guesses
-            self._used   = set()
-
-            self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
-
-            self.letter_count = 0
-
-        def hit(self, letter, position):
-            self.use(letter)
-            if position > -1:
-                if letter not in self.green:
-                    self.green[letter] = []
-                if position not in self.green[letter]:
-                    self.green[letter].append(position)
-                    if letter in self.yellow:
-                        self.yellow.remove(letter)
-                    else:
-                        self.letter_count += 1
-            elif position == -1:
-                self.yellow.add(letter)
-                self.letter_count += 1
-
-        def miss(self, letter):
-            self.gray.add(letter)
-            self.use(letter)
-
-        def use(self, letter):
-            self._used.add(letter)
-            if letter in self._unused:
-                self._unused.remove(letter)
-
-        def matching(self):
-            matching = self.green.copy()
-            for letter in self.yellow:
-                matching[letter] = [-1]
-            return matching
-
-        def used(self):
-            return self._used
-
-        def unused(self):
-            return self._unused
-
-    class Words:
-        def __init__(self):
-            self.letters = Data.Letters()
-            self._answers = _sort_by_score(_get_words(ANSWER_DICTIONARY), None)
-            guesses = self._answers.copy()
-            guesses = guesses + _get_words(GUESSING_DICTIONARY)
-            self._guesses = _sort_by_score(guesses, _generate_letter_scores(self._answers))
-
-        def register_guess(self, guess):
-            if guess in self._answers:
-                self._answers.remove(guess)
-            if guess in self._guesses:
-                self._guesses.remove(guess)
-
-        def _update(self):
-            if self.letters.used() == 0:
-                return
-            # always update answers first
-            self._update_answers()
-            self._update_guesses()
-
-        def _update_answers(self):
-            # remove words from answers if we don't have green letters
-            answers = self._answers.copy()
-            for word in answers:
-                dropped_word = False
-                if not dropped_word:
-                    for letter in self.letters.gray:
-                        if re.search(letter, word) is not None:
-                            self._answers.remove(word)
-                            dropped_word = True
-                            break
-                if not dropped_word:
-                    for letter in self.letters.yellow:
-                        if dropped_word:
-                            break
-                        if re.search(letter, word) is None:
-                            self._answers.remove(word)
-                            dropped_word = True
-                            break
-                if not dropped_word:
-                    for letter in self.letters.green.keys():
-                        if dropped_word:
-                            break
-                        for position in self.letters.green[letter]:
-                            if word[position] != letter:
-                                self._answers.remove(word)
-                                dropped_word = True
-                                break
-
-            self._answers = _sort_by_score(self._answers, None)
-
-        def _update_guesses(self):
-            # Remove words from guesses if used letters ARE in the word
-            guesses = self._guesses.copy()
-            for guess in guesses:
-                for letter in self.letters.used():
-                    if re.search(letter, guess) is not None:
-                        self._guesses.remove(guess)
-                        break
-
-            # Now sort exclusive guesses based on frequency of remaining words in answers
-            self._guesses = _sort_by_score(self._guesses, _generate_letter_scores(self._answers))
-
-        def next_guess(self, answer = False):
-            self._update()
-            guess = None
-
-            if len(self._answers) == 1:
-                guess = self._answers[0]
-            if guess is None and len(self._guesses) > 0:
-                guess = self._guesses[0]
-            if guess is None:
-                guess = self._answers[0]
-
-            if LOGGING:
-                print("Suggesting: " + guess)
-
-            return guess
-
+class Dictionary:
     def __init__(self):
-        self.words = Data.Words()
-        self.letters = self.words.letters
+        guesses = self.get_words('nyt-guesses.txt')
+        answers = self.get_words('nyt-answers.txt')
+        self.frequency = self._generate_letter_frequency(answers)
+        self.letters_by_position = self._sort_letters()
+
+        self.all_words = self._sort_by_score(guesses + answers)
+        self.exclusive_words = self.all_words.copy()
+        self.intersecting_words = self.all_words.copy()
+        self.answers = self._sort_by_score(answers)
+
+        self.feedback = LetterFeedback()
+
+    def get_words(self, filename):
+        word_arr = []
+        with open(filename, 'r') as words:
+            for word in words:
+                word_arr.append(word.strip().upper())
+
+        return word_arr
+
+    def _generate_letter_frequency(self, target_words):
+        frequency = dict()
+        for word in target_words:
+            for position, letter in enumerate(word):
+                if letter not in frequency:
+                    frequency[letter] = LetterFrequency(letter, position)
+                else:
+                    lett = frequency[letter]
+                    lett.add(position)
+        return frequency
+
+    def _sort_letters(self):
+        letters_by_position = dict()
+        for i in range(0,WORD_LENGTH):
+            letters_by_position[i] = []
+            for letter in self.frequency:
+                letters_by_position[i].append(PositionLetters(letter, i, self.frequency[letter].by_position[i]))
+            letters_by_position[i] = sorted(letters_by_position[i], reverse = True)
+
+        return letters_by_position
+
+    # returns score for word based on each letter in its position (rather than it's frequency overall)
+    def _get_word_score(self, word):
+        scores = dict()
+        for i, letter in enumerate(word):
+            this_score = self.frequency[letter][i]
+            # Don't give points for duplicate letters
+            if letter not in scores or scores[letter] < this_score:
+                scores[letter] = this_score
+        score = functools.reduce(lambda a, b: a + b, scores.values())
+        return score
+
+    def _sort_by_score(self, words):
+        word_dict = dict()
+        count = 0
+        for word in words:
+            word_dict[word] = self._get_word_score(word)
+#            if count == 100:
+#                break
+            count += 1
+
+        sorted_word_dict = sorted(word_dict.items(), key = lambda item: item[1], reverse = True)
+        sorted_word_arr = list(map(lambda x: x[0], sorted_word_dict))
+        return sorted_word_arr
+
+    def words_for_open_positions(self):
+        print("HERE")
+
+    def register_guess(self, guess):
+        print("GUESS: " + guess)
+        if guess in self.answers:
+            self.answers.remove(guess)
+        if guess in self.all_words:
+            self.all_words.remove(guess)
+        if guess in self.exclusive_words:
+            self.exclusive_words.remove(guess)
+
+    def _update(self):
+        if self.feedback.used() == 0:
+            return
+        # always update answers first
+        self._update_answers()
+        # and then guesses after
+        self._update_exclusive_words()
+        self._update_intersecting_words()
+
+    def _update_answers(self):
+        # remove words from answers if we don't have green letters
+        answers = self.answers.copy()
+        for word in answers:
+            dropped_word = False
+            if not dropped_word:
+                for letter in self.feedback.gray:
+                    if letter in word:
+                        self.answers.remove(word)
+                        dropped_word = True
+                        break
+            if not dropped_word:
+                for letter in self.feedback.yellow:
+                    if dropped_word:
+                        break
+                    if letter not in word:
+                        self.answers.remove(word)
+                        dropped_word = True
+                        break
+            if not dropped_word:
+                for letter in self.feedback.green.keys():
+                    if dropped_word:
+                        break
+                    for position in self.feedback.green[letter]:
+                        if word[position] != letter:
+                            self.answers.remove(word)
+                            dropped_word = True
+                            break
+
+        self.answers = self._sort_by_score(self.answers)
+
+    def _update_exclusive_words(self):
+        guesses = self.exclusive_words.copy()
+        for word in guesses:
+            for letter in self.feedback.used():
+                if letter in word:
+                    self.exclusive_words.remove(word)
+                    break
+        self.exclusive_words = self._sort_by_score(self.exclusive_words)
+
+    def _update_intersecting_guesses(self):
+        words = self.all_words.copy()
+        free_positions = self.feedback.open_spots
+        print("free positions: " + str(self.feedback.open_spots))
+        matching = dict()
+        for word in words:
+#        for i in free_positions:
+#            print(self.letters_by_position[i])
+        print("===========")
+
+        self.intersecting_guesses = self._sort_by_score(matching)
+
+    def next_guess(self):
+        self._update()
+        if len(self.answers) > 20:
+            guess = self.exclusive_guesses[0]
+        elif len(self.answers) > 1:
+            guess = self.intersecting_guesses[0]
+        else:
+            guess = self.answers[0]
+
+
+        if LOGGING:
+            print("Suggesting: " + guess)
+
+        assert(guess is not None)
+        return guess
+
+    def __str__(self):
+        return f'Dictionary\n{list(map(lambda x: x, words.frequency.values()))}'
+
+    def log(self):
+#        print(*list(map(lambda x: x, self.frequency.values())), sep = '\n')
+        print(*list(map(lambda x: x, self.letters_by_position.items())), sep = '\n')
+
+class LetterFeedback:
+    def __init__(self):
+        # These are for letters in known position
+        self.green  = dict()
+
+        # letters in the word but in the wrong position
+        self.yellow = set()
+
+        # letters not in the word
+        self.gray   = set()
+
+        # letters used in guesses
+        self._used   = set()
+
+        self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
+
+        self.open_spots = list(range(0,WORD_LENGTH))
+
+    def hit(self, letter, position):
+        self.use(letter)
+        if position > -1:
+            if letter not in self.green:
+                self.green[letter] = []
+            if position not in self.green[letter]:
+                self.open_spots.remove(position)
+                self.green[letter].append(position)
+                if letter in self.yellow:
+                    self.yellow.remove(letter)
+        elif position == -1:
+            if letter not in self.yellow:
+                self.yellow.add(letter)
+
+    def miss(self, letter):
+        self.gray.add(letter)
+        self.use(letter)
+
+    def use(self, letter):
+        self._used.add(letter)
+        if letter in self._unused:
+            self._unused.remove(letter)
+
+    def matching(self):
+        matching = self.green.copy()
+        for letter in self.yellow:
+            matching[letter] = [-1]
+        return matching
+
+    def used(self):
+        return self._used
+
+    def unused(self):
+        return self._unused
+
+class Puzzle:
+    def __init__(self):
+        self.dictionary = Dictionary()
+        self.feedback = self.dictionary.feedback
 
         # words we have guessed
-        self.guesses = []
+        self.guesses = list()
 
     # Only way to add a match from another class
     def hit(self, letter, position):
-        self.letters.hit(letter, position)
+        self.feedback.hit(letter, position)
 
     def miss(self, letter):
-        self.letters.miss(letter)
+        self.feedback.miss(letter)
 
     def add_guess(self, guess):
         self.guesses.append(guess)
-        self.words.register_guess(guess)
+        self.dictionary.register_guess(guess)
 
-    def next_guess(self, answer = False):
-        return self.words.next_guess(len(self.guesses) >= 1)
+    def next_guess(self):
+        return self.dictionary.next_guess()
 
     def matches(self, answer = False):
         if answer:
-            return self.words._answers
+            return self.dictionary.answers
         else:
-            return self.words._guesses
+            return self.dictionary.guesses
 
 class Solution:
     def __init__(self, guesses):
@@ -231,7 +293,7 @@ class Solver:
             self.target = target.upper()
         else:
             self.target = None
-        self.data = Data()
+        self.puzzle = Puzzle()
         self.guesses = []
         self._is_solved = False
 
@@ -243,50 +305,48 @@ class Solver:
 
             # if the letter is a miss
             if len(results) == 0:
-                self.data.miss(letter)
+                self.puzzle.miss(letter)
 
             # if the letter is a hit
             else:
                 for position in results:
                     # letter is in correct position
                     if position == index:
-                        self.data.hit(letter, position)
+                        self.puzzle.hit(letter, position)
                     # letter is not in the correct position
                     else:
-                        self.data.hit(letter, -1)
+                        self.puzzle.hit(letter, -1)
 
             index += 1
 
     def solve(self):
-        guess = self.data.next_guess()
-#        if len(self.guesses) == 0:
-#            guess = "SALET"
+        guess = self.puzzle.next_guess()
         while not self._is_solved:
             # Keep track of words and letters guessed
-            self.data.add_guess(guess)
+            self.puzzle.add_guess(guess)
             if guess == self.target:
                 self._is_solved = True
                 break
             else:
                 self._process_guess(guess)
-                guess = self.data.next_guess()
+                guess = self.puzzle.next_guess()
 
-        return Solution(self.data.guesses)
+        return Solution(self.puzzle.guesses)
 
     # The following methods are for the interactive solver
     def hit(self, letter, position = -1):
-        self.data.hit(letter.upper(), position-1)
+        self.puzzle.hit(letter.upper(), position-1)
 
     def miss(self, string):
         for letter in string.upper():
-            self.data.miss(letter)
+            self.puzzle.miss(letter)
 
     def guess(self, word):
-        self.data.add_guess(word.upper())
+        self.puzzle.add_guess(word.upper())
 
     def next_guess(self, answer = False):
-        return self.data.next_guess(answer)
+        return self.puzzle.next_guess(answer)
 
     def matches(self, answer = False):
-        return self.data.matches(answer)
+        return self.puzzle.matches(answer)
 
