@@ -228,7 +228,7 @@ class Dictionary:
         self._update()
         log(f'Answers: {len(self.answers)}, Exclusive: {len(self.exclusive_words)}')
         guess = None
-        if len(self.answers) > 50 and len(self.exclusive_words) > 0:
+        if len(self.answers) > 100 and len(self.exclusive_words) > 0:
             log("EXCLUSIVE")
             guess = self.exclusive_words[0]
         elif len(self.answers) > 6:
