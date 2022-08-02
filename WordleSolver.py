@@ -10,7 +10,8 @@ WORD_LENGTH = 5
 PENALTY_FOR_LETTER_REDUNDANCY = 0
 
 def log(string):
-    if int(os.getenv('WORDLE_LOGGING')) == 1:
+    logging = int(os.getenv('WORDLE_LOGGING')) == 1 if os.getenv('WORDLE_LOGGING') else False
+    if logging:
         print(string)
 
 class LetterFrequency:
@@ -226,7 +227,7 @@ class Dictionary:
 
     def next_guess(self):
         self._update()
-        log(f'Answers: {len(self.answers)}, Exclusive: {len(self.exclusive_words)}')
+        log(f'Answers: {self.answers}, Exclusive: {len(self.exclusive_words)}')
         guess = None
         if len(self.answers) > 100 and len(self.exclusive_words) > 0:
             log("EXCLUSIVE")
@@ -239,6 +240,10 @@ class Dictionary:
 
         assert(guess is not None)
         return guess
+
+    def is_answer(self, guess):
+        self._update()
+        return len(self.answers) == 0 and self.answers[0] == guess
 
     def __str__(self):
         return f'Dictionary\n{list(map(lambda x: x, words.frequency.values()))}'
@@ -339,6 +344,9 @@ class Puzzle:
         else:
             return self.dictionary.guesses
 
+    def is_answer(self, guess):
+        return self.dictionary.is_answer(guess)
+
 class Solution:
     def __init__(self, guesses):
         self.word = guesses[-1]
@@ -352,7 +360,6 @@ class Solver:
         else:
             self.target = None
         self.puzzle = Puzzle()
-        self.guesses = []
         self._is_solved = False
 
     def _process_guess(self, guess):
@@ -408,16 +415,25 @@ class Solver:
         for index, letter in enumerate(in_place):
             if letter != "_":
                 self.puzzle.hit(letter, index)
-                unused.remove(letter)
+                if letter in unused:
+                    unused.remove(letter)
         for letter in out_of_place:
             self.puzzle.hit(letter, -1)
             unused.remove(letter)
         for letter in unused:
             self.puzzle.miss(letter)
 
+
     def next_guess(self):
-        return self.puzzle.next_guess()
+        guess = self.puzzle.next_guess()
+        self._is_solved = self.puzzle.is_answer(guess)
+        return guess
 
     def matches(self, answer = False):
         return self.puzzle.matches(answer)
 
+    def is_solved(self):
+        return self._is_solved
+
+    def guesses(self):
+        return self.puzzle.guesses
