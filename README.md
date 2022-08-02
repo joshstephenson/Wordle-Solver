@@ -1,18 +1,20 @@
 # Python Wordle Solver
 
 ## What is Wordle?
-This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/games/wordle/index.html) in least possible guesses. Wordle is a 5-letter word guessing game where the player must guess a word in six guesses. For each guess, the player enters a 5-letter word and receives feedback. Feedback includes:
-- letters in the word but not in correct position (yellow)
-- letters in the word and in the correct position (green)
-- letters not in the word at all (gray)
+This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/games/wordle/index.html) in least possible guesses. Wordle is a 5-letter word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a 5-letter word and receives feedback for each letter:
+- Correct letters not in their correct positions will be marked yellow.
+- Correct letters in their correct positions will be marked green.
+- Letters that are not included in the target word will be marked gray.
 
 ## Performance
-![results-4 0575](https://user-images.githubusercontent.com/11002/182266138-b42cf540-0fdf-4677-be6f-9427df93e005.png)
+![results-3 9706](https://user-images.githubusercontent.com/11002/182399042-b6e3286c-c075-43e2-97d9-cb57c4ec8c14.png)
 
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 74% in 4 or under guesses. There are currently 10 words that aren't solved within the 6 guess limit with `ELBOW` being the worst offender at 8 guesses.
+Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 74% in 4 guesses or fewer. There are currently 8 words that aren't solved within the 6 guess limit.
 
 ## About the Program
-There are two dictionaries provided by the NYTimes for Wordle. One is for valid guesses which is around ten thousand words and the other is for valid answers which is only around 2300 words. Both are included in this repository.
+There are two dictionaries provided by the NYTimes for Wordle. One is for valid guesses which is around ten thousand words and the other is for valid answers which is only around 2300 words. Both are included in this repository:
+- `nyt-answers.txt`
+- `nyt-guesses.txt`
 
 ## Usage
 The current version can be used in 2 different ways:
@@ -53,29 +55,35 @@ Solved: YIELD in 3 guesses:
 OATER, LYSIN, YIELD
 ```
 
-Second, by loading the Solver class into the python shell or another python script, a player can play Wordle receiving advice on which word to guess next. After each guess the player must provide the feedback from the Wordle game (green, yellow and gray letters).
-
-If the target word is SANER:
+There is an interactive solver that will recommend the next guess, receive the player's chosen guess along with green and yellow letters:
 ```
-from WordleSolver import Solver
- 
- solver = Solver()
- # First argument: The word you guessed
- # Second argument: Green letters in their corresponding positions. Both E and R are in the right spot.
- # Third argument: Yellow letters (out of place hits)
- # All other letters (O and T) are misses.
- solver.guess("oater", "___er", "a")
- print("Your next guess should be: " + solver.next_guess())```
+./WordleInteractive.py
 ```
 
-Output:
+Example:
 ```
-~/Projects/Wordle-Solver$ ./wordle-sample.py 
-Your next guess should be: LYSIN
+joshstephenson@~/Projects/Wordle-Solver$ ./WordleInteractive.py 
+What is your first word guess? May I recommend OATER? salet
+You entered: SALET
+Please enter green letters in a string like '__A__' (or ENTER for none) 
+Please enter yellow letters (or ENTER for none) l
+Your next guess should be: CORNI
+What is your next guess? corni
+You entered: CORNI
+Please enter green letters in a string like '__A__' (or ENTER for none) co___
+Please enter yellow letters (or ENTER for none) 
+Your next guess should be: COYLY
+What is your next guess? coyly
+You entered: COYLY
+Please enter green letters in a string like '__A__' (or ENTER for none) coyly
+We won in 3 guesses!
 ```
+
+## Finding the Best Starting Word
+Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait a long time. This script will loop over all 12952 words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each batch. I will update this once the script finishes, although I suspect it won't be necessary to go through more than 100, because the calculated scores will be so low, it's unlikely the best starting word is not in the top 100 word scores.
 
 ## The Algorithm
-The algorithm has two distinct word lists. The property `answers` is populated from nyt-answers.txt and the property `exclusive_words` is populated from a combination of 'nyt-guesses.txt' and 'nyt-answers.txt'. `exclusive_words` is a python list that is initially sorted by the popularity of letters in each word. This is best for pruning the list of answers as fast as possible. `answers` is a python list that is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
+The algorithm has two separate word lists. The property `answers` is populated from nyt-answers.txt and the property `exclusive_words` is populated from a combination of 'nyt-guesses.txt' and 'nyt-answers.txt'. `exclusive_words` is a python list that is initially sorted by the popularity of letters in each word. This is best for pruning the list of answers as fast as possible. `answers` is a python list that is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
 
 After each guess, the algorithm finds the next best guess using the following steps:
 
