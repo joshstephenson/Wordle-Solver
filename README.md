@@ -1,7 +1,8 @@
 # Python Wordle Solver
+This is a Python script to solve Wordle in as few guesses as possible. The goal is to solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses.
 
 ## What is Wordle?
-This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/games/wordle/index.html) in least possible guesses. Wordle is a 5-letter word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a 5-letter word and receives feedback for each letter:
+[Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
 - Correct letters not in their correct positions will be marked yellow.
 - Correct letters in their correct positions will be marked green.
 - Letters that are not included in the target word will be marked gray.
@@ -9,7 +10,7 @@ This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/ga
 ## Performance
 ![results-EARST-3 9348](https://user-images.githubusercontent.com/11002/182449278-57b8f3ed-ed26-4b3b-9181-13220b4c10a0.png)
 
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 74% in 4 guesses or fewer. There are currently 8 words that aren't solved within the 6 guess limit.
+Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 79% in 4 guesses or fewer. There are currently 11 words that aren't solved within the 6 guess limit: ASSAY, AWARE, BEZEL, FETAL, GRAZE, OFFER, REGAL, RIDER, RIPER, ROGER, SHALL.
 
 ## About the Program
 There are two dictionaries provided by the NYTimes for Wordle. One is for valid guesses which is around ten thousand words and the other is for valid answers which is only around 2300 words. Both are included in this repository:
@@ -93,7 +94,7 @@ We won in 3 guesses!
 ```
 
 ## Finding the Best Starting Word
-Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait a long time. This script will loop over all 12952 words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each batch.
+Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait a long time. This script will loop over all 12952 answer and guess words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each starting word is finished. As of this update, the best starting word is EARST with an average of 3.9348 guesses per puzzle.
 
 ## The Algorithm
 The algorithm has two separate word lists. The property `answers` is populated from nyt-answers.txt and the property `exclusive_words` is populated from a combination of 'nyt-guesses.txt' and 'nyt-answers.txt'. `exclusive_words` is a python list that is initially sorted by the popularity of letters in each word. This is best for pruning the list of answers as fast as possible. `answers` is a python list that is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
