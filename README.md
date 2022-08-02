@@ -13,49 +13,56 @@ There are two dictionaries provided by the NYTimes for Wordle. One is for valid 
 The current version can be used in 2 different ways:
 First, by running the script directly it will parse a list of recent Wordle words and solve them, printing out the words it used to guess and total number of guesses
 
+To run the entire NYT Wordle dictionary of answers:
 ```
-4.0757 UNCUT(3): OATER, LYSIN, UNCUT
-4.0752 UNDER(3): OATER, LYSIN, UNDER
-4.0752 UNDID(4): OATER, LYSIN, CUMIN, UNDID
-4.0756 UNDUE(5): OATER, LYSIN, CUBED, NUDGE, UNDUE
-4.076  UNFED(5): OATER, LYSIN, QUEEN, UNWED, UNFED
-4.076  UNFIT(4): OATER, LYSIN, TUNIC, UNFIT
-4.076  UNIFY(4): OATER, LYSIN, PUDGE, UNIFY
-4.0755 UNION(3): OATER, LYSIN, UNION
-4.0754 UNITE(4): OATER, LYSIN, TWINE, UNITE
-4.0754 UNITY(4): OATER, LYSIN, MINTY, UNITY
-4.0749 UNLIT(3): OATER, LYSIN, UNLIT
-4.0744 UNMET(3): OATER, LINDS, UNMET
-4.0739 UNSET(3): OATER, LINDS, UNSET
-4.0734 UNTIE(3): OATER, LYSIN, UNTIE
-4.0729 UNTIL(3): OATER, LINCH, UNTIL
+WORDLE_LOGGING=0 && ./SolverTest.py 
+```
+
+```
+4.1858 HYDRO(3): OATER, LYSIN, HYDRO
+4.1846 HYENA(3): OATER, LYSIN, HYENA
+4.1834 HYMEN(3): OATER, LYSIN, HYMEN
+4.1833 HYPER(4): OATER, LYSIN, CYBER, HYPER
+4.1831 ICILY(4): OATER, LYSIN, CHAMP, ICILY
+4.1829 ICING(4): OATER, LYSIN, CHUMP, ICING
+4.1827 IDEAL(4): OATER, LYSIN, GAMED, IDEAL
+4.1825 IDIOM(4): OATER, LYSIN, CHUMP, IDIOM
+4.1824 IDIOT(4): OATER, LYSIN, CAPED, IDIOT
+4.1822 IDLER(4): OATER, LYSIN, PAVED, IDLER
+4.184  IDYLL(6): OATER, LYSIN, CHAMP, BOWED, DILLY, IDYLL
+4.1848 IGLOO(5): OATER, LYSIN, GAMBE, LOGIC, IGLOO
+4.1855 ILIAC(5): OATER, LYSIN, CUBED, AMOVE, ILIAC
+4.1854 IMAGE(4): OATER, LYSIN, GAMED, IMAGE
+4.1852 IMBUE(4): OATER, LYSIN, CHUMP, IMBUE
+4.185  IMPEL(4): OATER, LYSIN, AMPED, IMPEL
 ...
+```
+
+To test a single word:
+```
+WORDLE_LOGGING=0 && ./SolverTest.py -w elbow
+Solved: YIELD in 3 guesses: 
+OATER, LYSIN, YIELD
 ```
 
 Second, by loading the Solver class into the python shell or another python script, a player can play Wordle receiving advice on which word to guess next. After each guess the player must provide the feedback from the Wordle game (green, yellow and gray letters).
 
-Example from July 28th (2022) Wordle (answer: STOMP):
+If the target word is SANER:
 ```
 from WordleSolver import Solver
-  
-solver = Solver()
-solver.guess("arose")
-solver.miss("are")
-olver.hit("o", 3)
-solver.hit("s")
-solver.guess("sloth")
-solver.miss("lh")
-solver.hit("s", 1)
-solver.hit("t")
-solver.guess("stowp")
-```
+ 
+ solver = Solver()
+ # First argument: The word you guessed
+ # Second argument: Green letters in their corresponding positions. Both E and R are in the right spot.
+ # Third argument: Yellow letters (out of place hits)
+ # All other letters (O and T) are misses.
+ solver.guess("oater", "___er", "a")
+ print("Your next guess should be: " + solver.next_guess())```
 
 Output:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./wordle-sample.py 
-Your next guess should be: STOWP
-All options:
-['STOWP', 'SPOUT', 'STOUP', 'STOMP', 'SNOUT', 'STONY', 'STOCK', 'SCOUT', 'SPOTS', 'STOOP', 'STOPS', 'STOPT', 'SNOOT', 'SNOTS', 'STOIC', 'STOWS', 'SWOTS', 'SCOOT', 'SCOTS', 'STOGY', 'STOOK', 'STOUT', 'SOOTY', 'STOBS', 'STOOD', 'SOOTS', 'STOSS', 'STOTS', 'STOTT', 'SWOUN', 'SNOWY', 'SNOOP', 'SPOON', 'SWOOP', 'SWOPS', 'SCOOP', 'SCOPS', 'SNOWS', 'SWOON', 'SPOOK', 'SMOCK', 'SNOOK', 'SCOWS', 'SPOOF', 'SNOBS', 'SNOGS', 'SMOKY', 'SNOOD', 'SWOBS', 'SCOFF', 'SMOGS', 'SOOKS']
+~/Projects/Wordle-Solver$ ./wordle-sample.py 
+Your next guess should be: LYSIN
 ```
 
 ## The Algorithm
@@ -69,6 +76,6 @@ As the inclusive word list is updated, the frequency of letters available in the
 The words are sorted in decreasing order by the frequency of their letters within the remaining inclusive word list and then given an overall word score. Duplicate letters are intrinsically detrimental to the score of words. This ensures that whenever we have multiple options we pick the one with the highest likelihood of being the target word.
 
 ## Performance
-![results-4 0989](https://user-images.githubusercontent.com/11002/182252611-9fbca7d8-36a4-4623-9ce6-dbd43a73d31f.jpg)
+![results-4 0575](https://user-images.githubusercontent.com/11002/182266138-b42cf540-0fdf-4677-be6f-9427df93e005.png)
 
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 98.5% in 6 guesses or fewer. There are currently 34 words that aren't solved within 6 guesses.
+Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer. There are currently 10 words that aren't solved within 6 guesses with elbow, the worst offender at 8 guesses.
