@@ -116,5 +116,22 @@ After each guess, the algorithm finds the next best guess using the following st
 2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. It will look at the set of letters contained by remaining answers and subtract the set of letters that have already been matched in guesses (see `LetterFeedback` class). From this set, it will find a word (using all original words) that has the most number of these letters. This helps prune answers when they have many common letters.
 3. As soon as the answers are pruned down to less than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
+## Most Popular Letters for Each Position of Five Letter Words
+- S is the most frequent starting letter.
+- A is the most frequent second and third letter.
+- E is the most frequent fourth and fifth letter.
+
+Below is a table of calculated frequencies in all positions.
+
+Position|Letter:Frequency in Answers
+------|-----------------------
+1|S:366, C:198, B:173, T:149, P:142, A:141, F:136, G:115, D:111, M:107, R:105, L:88, W:83, E:72, H:69, V:43, O:41, N:37, I:34, U:33, Q:23, K:20, J:20, Y:6, Z:3, X:0
+2|A:304, O:279, R:267, E:242, I:202, L:201, U:186, H:144, N:87, T:77, P:61, W:44, C:40, M:38, Y:23, D:20, B:16, S:16, V:15, X:14, G:12, K:10, F:8, Q:5, Z:2, J:2
+3|A:307, I:266, O:244, E:177, U:165, R:163, N:139, L:112, T:111, S:80, D:75, G:67, M:61, P:58, B:57, C:56, V:49, Y:29, W:26, F:25, K:12, X:12, Z:11, H:9, J:3, Q:1
+4|E:318, N:182, S:171, A:163, L:162, I:158, C:152, R:152, T:139, O:132, U:82, G:76, D:69, M:68, K:55, P:50, V:46, F:35, H:28, W:25, B:24, Z:20, Y:3, X:3, J:2, Q:0
+5|E:424, Y:364, T:253, R:212, L:156, H:139, N:130, D:118, K:113, A:64, O:58, P:56, M:42, G:41, S:36, C:31, F:26, W:17, B:11, I:11, X:8, Z:4, U:1, V:0, J:0, Q:0
+
+
+
 ## Contributions
 If you use this or would like to contribute, please let me know. I am not interested in solutions that precompute the best path for every word and cache them. I don't find those solutions very compelling.
