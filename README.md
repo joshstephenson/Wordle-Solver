@@ -60,6 +60,7 @@ from WordleSolver import Solver
  # All other letters (O and T) are misses.
  solver.guess("oater", "___er", "a")
  print("Your next guess should be: " + solver.next_guess())```
+```
 
 Output:
 ```
