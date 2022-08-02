@@ -161,7 +161,7 @@ class Dictionary:
 #        log("REGEX: " + re_string)
 #        return list(filter(lambda x: re.search(re_string, x) is not None, words))
 
-    def _word_should_be_kept(self, word, inclusive = True):
+    def _word_should_be_saved(self, word, inclusive = True):
         if inclusive:
             for letter in self.feedback.gray:
                 if letter in word:
@@ -181,10 +181,10 @@ class Dictionary:
         return True
 
     def _update_answers(self):
-        self.answers = list(filter(self._word_should_be_kept, self.answers))
+        self.answers = list(filter(self._word_should_be_saved, self.answers))
 
     def _update_exclusive_words(self):
-        self.exclusive_words = list(filter(lambda word: self._word_should_be_kept(word, False), self.exclusive_words))
+        self.exclusive_words = list(filter(lambda word: self._word_should_be_saved(word, False), self.exclusive_words))
 
     def intersecting_word(self):
         log(self.answers)
