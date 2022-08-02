@@ -13,7 +13,7 @@ This is a Python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 ## Performance
 ![results-EARST-3 9348](https://user-images.githubusercontent.com/11002/182449278-57b8f3ed-ed26-4b3b-9181-13220b4c10a0.png)
 
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 79% in 4 guesses or fewer. There are currently 11 words that aren't solved within the 6 guess limit: ASSAY, AWARE, BEZEL, FETAL, GRAZE, OFFER, REGAL, RIDER, RIPER, ROGER & SHALL which all require 7 guesses.
+Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solves 99.5% in 6 guesses or fewer and 79% in 4 guesses or fewer. There are currently 11 words that aren't solved within the 6 guess limit: ASSAY, AWARE, BEZEL, FETAL, GRAZE, OFFER, REGAL, RIDER, RIPER, ROGER & SHALL which all require 7 guesses.
 
 ## About the Program
 There are two dictionaries provided by the NYTimes for Wordle:
