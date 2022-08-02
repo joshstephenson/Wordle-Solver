@@ -370,7 +370,7 @@ class Solver:
         else:
             self.target = None
         self.puzzle = Puzzle()
-        if not self.puzzle.is_supported_answer(self.target):
+        if self.target is not None and not self.puzzle.is_supported_answer(self.target):
             raise UnsupportedAnswer()
         self._is_solved = False
 
