@@ -15,7 +15,7 @@ This is a Python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 
 Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solves 99.5% in 6 guesses or fewer and 79% in 4 guesses or fewer. There are currently 11 words that aren't solved within the 6 guess limit: ASSAY, AWARE, BEZEL, FETAL, GRAZE, OFFER, REGAL, RIDER, RIPER, ROGER & SHALL which all require 7 guesses.
 
-## About the Program
+## Dictionaries
 There are two dictionaries provided by the NYTimes for Wordle:
 - [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt) 2315 words which are valid puzzle answers and can also be used as guesses.
 - [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt) 10637 words which can be used as guesses but will not be used as puzzle answers.
@@ -50,7 +50,7 @@ For debugging purposes, you can enable logging with `WORDLE_LOGGING=1 && ./Solve
 
 You can test a single word with the `-w WORD` option:
 ```
-WORDLE_LOGGING=0 && ./SolverTest.py -w elbow
+./SolverTest.py -w elbow
 Solved: YIELD in 3 guesses: 
 OATER, LYSIN, YIELD
 ```
@@ -76,7 +76,7 @@ This is the most useful thing you might want to use while you are actually solvi
 Example:
 ```
 joshuastephenson@~/Projects/Wordle-Solver$ ./WordleInteractive.py 
-What is your first word guess? May I recommend OATER?
+What is your first word guess? May I recommend EARST?
 > salet
 You entered: SALET
 Please enter green letters (or ENTER for none)
@@ -99,9 +99,6 @@ Please enter green letters in a string like '__A__' (or ENTER for none)
 > coyly
 You won 😉 in 3 guesses!
 ```
-
-## Finding the Best Starting Word
-Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait _a long time_. This script will loop over all 12952 answer and guess words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each starting word is finished. As of this update, the best starting word is EARST with an average of 3.9348 guesses per puzzle.
 
 ## The Algorithm
 The algorithm has two separate word lists. The property `answers` is populated from nyt-answers.txt and the property `exclusive_words` is populated from a combination of 'nyt-guesses.txt' and 'nyt-answers.txt'. `exclusive_words` is a python list that is initially sorted by the popularity of letters in each word. This is best for pruning the list of answers as fast as possible. `answers` is a python list that is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
@@ -141,6 +138,9 @@ LEAST, SLATE, STALE, STEAL, CARET, CARTE, RECTA, CATER, CRATE, REACT,
 TRACE, CARLE, LACER, RECAL, URATE, CLEAR, ALURE, UREAL, ESTRO, RESTO, 
 ROSET, ROTES, TORES, TORSE, STORE, OILER, ORIEL, REOIL, EORLS, LORES
 ```
+
+## Finding the Best Starting Word
+Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait _a long time_. This script will loop over all 12952 answer and guess words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each starting word is finished. As of this update, the best starting word is EARST with an average of 3.9348 guesses per puzzle.
 
 ## Contributions
 If you use this or would like to contribute, feel free to fork, contact me or submit a PR. Please note: I am not interested in solutions that precompute the best path for every word and cache them. I don't find solutions of that kind very compelling.
