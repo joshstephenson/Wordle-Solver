@@ -13,15 +13,15 @@ Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm 
 
 ## About the Program
 There are two dictionaries provided by the NYTimes for Wordle. One is for valid guesses which is around ten thousand words and the other is for valid answers which is only around 2300 words. Both are included in this repository:
-- `nyt-answers.txt`
-- `nyt-guesses.txt`
+- [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt)
+- [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt)
 
 ## Usage
 The current version can be used in 2 different ways:
 
-First, by running the script directly it will parse a list of recent Wordle words and solve them, printing out the words it used to guess and total number of guesses
+First, by running [SolverTest.py](https://github.com/joshstephenson/Wordle-Solver/blob/main/SolverTest.py) with no arguments it will parse the entire answer list and solve them, printing out the words it used to guess and total number of guesses. It will also print out a running average of guesses per answer.
 
-To run the entire NYT Wordle dictionary of answers:
+Example:
 ```
 ./SolverTest.py 
 ```
@@ -48,14 +48,27 @@ To run the entire NYT Wordle dictionary of answers:
 
 For debugging purposes, you can enable logging with `WORDLE_LOGGING=1 && ./SolverTest.py`.
 
-To test a single word:
+You can also test a single word with the `-w WORD` option:
 ```
 WORDLE_LOGGING=0 && ./SolverTest.py -w elbow
 Solved: YIELD in 3 guesses: 
 OATER, LYSIN, YIELD
 ```
 
-There is an interactive solver that will recommend the next guess, receive the player's chosen guess along with green and yellow letters:
+You can also find the rank of a word in the overall word scores with the `-r WORD` option:
+```
+joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -r salet
+63/12953
+```
+
+And finally, you can get the individual score of a word with the `-s WORD` option:
+```
+joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -s salet
+4324
+```
+
+## Interactive Solver
+This is the most useful thing you might want to use while you are actually solving the puzzle online. It will recommend the player's next guess, receive the player's chosen guess along with green and yellow letters:
 ```
 ./WordleInteractive.py
 ```
@@ -80,7 +93,7 @@ We won in 3 guesses!
 ```
 
 ## Finding the Best Starting Word
-Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait a long time. This script will loop over all 12952 words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each batch. I will update this once the script finishes, although I suspect it won't be necessary to go through more than 100, because the calculated scores will be so low, it's unlikely the best starting word is not in the top 100 word scores.
+Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait a long time. This script will loop over all 12952 words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each batch.
 
 ## The Algorithm
 The algorithm has two separate word lists. The property `answers` is populated from nyt-answers.txt and the property `exclusive_words` is populated from a combination of 'nyt-guesses.txt' and 'nyt-answers.txt'. `exclusive_words` is a python list that is initially sorted by the popularity of letters in each word. This is best for pruning the list of answers as fast as possible. `answers` is a python list that is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
