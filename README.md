@@ -131,7 +131,11 @@ Position|Letter:Frequency in Answers
 4|E:318, N:182, S:171, A:163, L:162, I:158, C:152, R:152, T:139, O:132, U:82, G:76, D:69, M:68, K:55, P:50, V:46, F:35, H:28, W:25, B:24, Z:20, Y:3, X:3, J:2, Q:0
 5|E:424, Y:364, T:253, R:212, L:156, H:139, N:130, D:118, K:113, A:64, O:58, P:56, M:42, G:41, S:36, C:31, F:26, W:17, B:11, I:11, X:8, Z:4, U:1, V:0, J:0, Q:0
 
+With these frequencies, we can calculate a score for each word based on the letters it has in positions 1 through 5. The 100 highest scoring words are, in order:
 
+```
+OATER, ORATE, ROATE, REALO, ARTEL, RATEL, TALER, ALERT, ALTER, LATER, AEROS, SOARE, AROSE, RETIA, TERAI, IRATE, ARETS, ASTER, EARST, RATES, REAST, RESAT, STEAR, STRAE, TARES, TASER, TEARS, TERAS, STARE, ARIEL, RAILE, ARLES, EARLS, LAERS, LARES, LASER, LEARS, RALES, REALS, SERAL, AESIR, REAIS, SERAI, ARISE, RAISE, ANTRE, EARNT, NERAL, LEARN, RENAL, STOAE, TOEAS, RAINE, EARNS, NARES, NEARS, REANS, SANER, SNARE, ALOES, OCREA, TELIA, LEATS, SALET, SETAL, STELA, TAELS, TALES, TEALS, TESLA, LEAST, SLATE, STALE, STEAL, CARET, CARTE, RECTA, CATER, CRATE, REACT, TRACE, CARLE, LACER, RECAL, URATE, CLEAR, ALURE, UREAL, ESTRO, RESTO, ROSET, ROTES, TORES, TORSE, STORE, OILER, ORIEL, REOIL, EORLS, LORES
+```
 
 ## Contributions
 If you use this or would like to contribute, please let me know. I am not interested in solutions that precompute the best path for every word and cache them. I don't find those solutions very compelling.
