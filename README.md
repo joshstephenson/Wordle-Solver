@@ -9,7 +9,7 @@ This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/ga
 ## Performance
 ![results-4 0575](https://user-images.githubusercontent.com/11002/182266138-b42cf540-0fdf-4677-be6f-9427df93e005.png)
 
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer. There are currently 10 words that aren't solved within 6 guesses with `ELBOW` being the worst offender at 8 guesses.
+Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 74% in 4 or under guesses. There are currently 10 words that aren't solved within the 6 guess limit with `ELBOW` being the worst offender at 8 guesses.
 
 ## About the Program
 There are two dictionaries provided by the NYTimes for Wordle. One is for valid guesses which is around ten thousand words and the other is for valid answers which is only around 2300 words. Both are included in this repository.
