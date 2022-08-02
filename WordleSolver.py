@@ -73,6 +73,9 @@ class Dictionary:
         return word_arr
 
     def _generate_letter_frequency(self, target_words):
+        """ Returns a dictionary of letters with their corresponding frequencies
+        target_words: list of words
+        """
         frequency = dict()
         for word in target_words:
             for position, letter in enumerate(word):
@@ -84,6 +87,7 @@ class Dictionary:
         return frequency
 
     def _sort_letters(self):
+        """ Sorts letters by their frequency returning a dictionary with letters as the key """
         letters_by_position = dict()
         for i in range(0,WORD_LENGTH):
             letters_by_position[i] = []
@@ -93,9 +97,10 @@ class Dictionary:
 
         return letters_by_position
 
-    # returns score for word based on each letter in its position (if by_position = True)
-    # Or by its position anywhere in the word
     def _get_word_score(self, word, by_position = True):
+        """ Returns score for word
+        by_position: if true, then score will be based on letter position
+        """
         scores = dict()
         if by_position:
             for i, letter in enumerate(word):
@@ -111,6 +116,11 @@ class Dictionary:
         return score
 
     def _word_scores(self, words, by_position = True):
+        """
+        Returns a dictionary of words with word as key and score as value
+        words: list of words
+        by_position: if True then scores will be based on letter position
+        """
         word_dict = dict()
         count = 0
         for word in words:
@@ -124,21 +134,28 @@ class Dictionary:
         sorted_word_arr = list(map(lambda x: x[0], scores))
         return sorted_word_arr
 
-    # Get the rank of a single word out of all words
     def rank_of(self, word):
+        """
+        Get the rank of a single word out of all words
+        """
         word = word.upper()
         count = len(self.all_words)
         index = self.all_words.index(word)
         return f'{index}/{count}'
 
-    # Get a score for a single word
     def score_of(self, word):
+        """
+        Get the score for a single word: x/(total word count)
+        """
         word = word.upper()
         found = filter(lambda x: x[1] if x[0] == word else None, self.word_scores)
         return list(found)[0][1]
 
-    # Call this after a guess is actually made
     def register_guess(self, guess):
+        """
+        Call this after a guess is actually made. It will make sure guesses are removed from available answers and guess words.
+        guess: the word to remove
+        """
         log("GUESS: " + guess)
         if guess in self.answers:
             self.answers.remove(guess)
@@ -170,6 +187,10 @@ class Dictionary:
 #        return list(filter(lambda x: re.search(re_string, x) is not None, words))
 
     def _word_should_be_saved(self, word, inclusive = True):
+        """
+        Used internally to decide whether or not a word should be removed from a given word list
+        based on LetterFeedback (greens, yellows, grays and used)
+        """
         if inclusive:
             for letter in self.feedback.gray:
                 if letter in word:
@@ -195,6 +216,10 @@ class Dictionary:
         self.exclusive_words = list(filter(lambda word: self._word_should_be_saved(word, False), self.exclusive_words))
 
     def intersecting_word(self):
+        """
+        This function needs optimization.
+        It finds a word that will cut through a small list of answers with many common letters
+        """
         log(self.answers)
         available_letters = set((letter for letter in ''.join(self.answers)))
         log(f'Letters in Answers: {available_letters}')
@@ -233,6 +258,10 @@ class Dictionary:
         return best_word
 
     def next_guess(self):
+        """
+        This function starts the pruning process and based on number of answers and exclusive_words remaining,
+        returns either an exclusive word, an intersecting word or an answer.
+        """
         self._update()
         log(f'Answers: {self.answers}, Exclusive: {len(self.exclusive_words)}')
         guess = None
@@ -249,6 +278,10 @@ class Dictionary:
         return guess
 
     def is_answer(self, guess):
+        """
+        This is to ensure we don't try to solve a word that isn't supported in the answer list
+        Should only be called before registering any guesses
+        """
         self._update()
         return len(self.answers) == 0 and self.answers[0] == guess
 
@@ -259,6 +292,9 @@ class Dictionary:
         log(*list(map(lambda x: x, self.letters_by_position.items())), sep = '\n')
 
 class LetterFeedback:
+    """
+    This class keeps track of letters used and whether they were green, yellow or gray
+    """
     def __init__(self):
         # These are for letters in known position
         self.green  = dict()
@@ -396,7 +432,7 @@ class Solver:
 
             index += 1
 
-    def solve(self, starting_word = "SALET"):
+    def solve(self, starting_word = "EARST"):
         guess = starting_word if starting_word else self.puzzle.next_guess()
         while not self._is_solved:
             # Keep track of words and letters guessed
