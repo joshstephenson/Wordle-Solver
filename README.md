@@ -16,6 +16,7 @@ There are two dictionaries provided by the NYTimes for Wordle. One is for valid 
 
 ## Usage
 The current version can be used in 2 different ways:
+
 First, by running the script directly it will parse a list of recent Wordle words and solve them, printing out the words it used to guess and total number of guesses
 
 To run the entire NYT Wordle dictionary of answers:
