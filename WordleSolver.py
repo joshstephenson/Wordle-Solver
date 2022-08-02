@@ -14,6 +14,13 @@ def log(string):
     if logging:
         print(string)
 
+class UnsupportedAnswer(Exception):
+    """Used when Solver is initialized with an unsupported word"""
+    pass
+
+    def __str__(self):
+        return "This word is not a supported answer"
+
 class LetterFrequency:
     def __init__(self, letter, position):
         self.letter = letter
@@ -347,6 +354,9 @@ class Puzzle:
     def is_answer(self, guess):
         return self.dictionary.is_answer(guess)
 
+    def is_supported_answer(self, answer):
+        return answer in self.dictionary.answers
+
 class Solution:
     def __init__(self, guesses):
         self.word = guesses[-1]
@@ -360,6 +370,8 @@ class Solver:
         else:
             self.target = None
         self.puzzle = Puzzle()
+        if not self.puzzle.is_supported_answer(self.target):
+            raise UnsupportedAnswer()
         self._is_solved = False
 
     def _process_guess(self, guess):
