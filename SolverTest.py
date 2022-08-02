@@ -17,7 +17,7 @@ elif args.score:
 elif args.word:
     solution = Solver(args.word.strip().upper()).solve()
     print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
-    print(solution.guesses)
+    print(', '.join(solution.guesses))
 
 else:
     dictionary = (args.dictionary if args.dictionary else "nyt-answers.txt")

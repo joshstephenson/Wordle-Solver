@@ -231,7 +231,7 @@ class Dictionary:
         if len(self.answers) > 100 and len(self.exclusive_words) > 0:
             log("EXCLUSIVE")
             guess = self.exclusive_words[0]
-        elif len(self.answers) > 4:
+        elif len(self.answers) > 3:
             guess = self.intersecting_word()
 
         if guess is None:
