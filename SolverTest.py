@@ -30,7 +30,7 @@ else:
     with open(dictionary, 'r') as words:
         for word in words:
             count += 1
-            solution = Solver(word.strip().upper()).solve()
+            solution = Solver(word.strip().upper()).solve("SALET")
             score += solution.guess_count
             if solution.guess_count > 6:
                 hardest_words.append(word)

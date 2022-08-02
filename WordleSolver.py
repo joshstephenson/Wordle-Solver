@@ -384,8 +384,8 @@ class Solver:
 
             index += 1
 
-    def solve(self):
-        guess = "SALET"#self.puzzle.next_guess()
+    def solve(self, starting_word = "SALET"):
+        guess = starting_word if starting_word else self.puzzle.next_guess()
         while not self._is_solved:
             # Keep track of words and letters guessed
             self.puzzle.add_guess(guess)
