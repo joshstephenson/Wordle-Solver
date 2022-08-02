@@ -2,7 +2,7 @@
 This is a Python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goal is threefold: 
 1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses. 
 2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle with the starting word EARST.
-3. To implement an algorithm that is not dependent on a given wordset. While this repository is testing on a static wordset, the algorithm should perform equally well if new words are added or removed.
+3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed.
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
@@ -31,22 +31,18 @@ Example:
 ```
 
 ```
-4.1858 HYDRO(3): OATER, LYSIN, HYDRO
-4.1846 HYENA(3): OATER, LYSIN, HYENA
-4.1834 HYMEN(3): OATER, LYSIN, HYMEN
-4.1833 HYPER(4): OATER, LYSIN, CYBER, HYPER
-4.1831 ICILY(4): OATER, LYSIN, CHAMP, ICILY
-4.1829 ICING(4): OATER, LYSIN, CHUMP, ICING
-4.1827 IDEAL(4): OATER, LYSIN, GAMED, IDEAL
-4.1825 IDIOM(4): OATER, LYSIN, CHUMP, IDIOM
-4.1824 IDIOT(4): OATER, LYSIN, CAPED, IDIOT
-4.1822 IDLER(4): OATER, LYSIN, PAVED, IDLER
-4.184  IDYLL(6): OATER, LYSIN, CHAMP, BOWED, DILLY, IDYLL
-4.1848 IGLOO(5): OATER, LYSIN, GAMBE, LOGIC, IGLOO
-4.1855 ILIAC(5): OATER, LYSIN, CUBED, AMOVE, ILIAC
-4.1854 IMAGE(4): OATER, LYSIN, GAMED, IMAGE
-4.1852 IMBUE(4): OATER, LYSIN, CHUMP, IMBUE
-4.185  IMPEL(4): OATER, LYSIN, AMPED, IMPEL
+4.1111 ANODE(3): EARST, COLIN, ANODE
+4.0989 ANTIC(3): EARST, COLIN, ANTIC
+4.0978 ANVIL(4): EARST, COLIN, PLAIN, ANVIL
+4.086  AORTA(3): EARST, COYED, AORTA
+4.0851 APART(4): EARST, CHINO, PUDGE, APART
+4.0842 APHID(4): EARST, COLIN, HAMED, APHID
+4.0833 APING(4): EARST, COLIN, AMPED, APING
+4.0825 APNEA(4): EARST, COLIN, HYPED, APNEA
+4.0918 APPLE(5): EARST, COLIN, DUMPY, LAPEL, APPLE
+4.0909 APPLY(4): EARST, COLIN, DUMPY, APPLY
+4.09   APRON(4): EARST, COLIN, BARON, APRON
+4.0891 APTLY(4): EARST, COLIN, UPBYE, APTLY
 ...
 ```
 
