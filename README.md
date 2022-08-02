@@ -1,5 +1,8 @@
 # Python Wordle Solver
-This is a Python script to solve Wordle in as few guesses as possible. The goal is to solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses.
+This is a Python script to solve Wordle. The goal is threefold: 
+1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses. 
+2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle with the starting word EARST.
+3. To implement an algorithm that is not dependent on a given wordset. While this repository is testing on a static wordset, the algorithm should perform equally well if new words are added or removed.
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
@@ -10,12 +13,12 @@ This is a Python script to solve Wordle in as few guesses as possible. The goal 
 ## Performance
 ![results-EARST-3 9348](https://user-images.githubusercontent.com/11002/182449278-57b8f3ed-ed26-4b3b-9181-13220b4c10a0.png)
 
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 79% in 4 guesses or fewer. There are currently 11 words that aren't solved within the 6 guess limit: ASSAY, AWARE, BEZEL, FETAL, GRAZE, OFFER, REGAL, RIDER, RIPER, ROGER, SHALL.
+Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 79% in 4 guesses or fewer. There are currently 11 words that aren't solved within the 6 guess limit: ASSAY, AWARE, BEZEL, FETAL, GRAZE, OFFER, REGAL, RIDER, RIPER, ROGER & SHALL which all require 7 guesses.
 
 ## About the Program
-There are two dictionaries provided by the NYTimes for Wordle. One is for valid guesses which is around ten thousand words and the other is for valid answers which is only around 2300 words. Both are included in this repository:
-- [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt)
-- [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt)
+There are two dictionaries provided by the NYTimes for Wordle:
+- [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt) 2315 words which are valid puzzle answers and can also be used as guesses.
+- [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt) 10637 words which can be used as guesses but will not be used as puzzle answers.
 
 ## Usage
 The current version can be used in 2 different ways:
@@ -49,14 +52,14 @@ Example:
 
 For debugging purposes, you can enable logging with `WORDLE_LOGGING=1 && ./SolverTest.py`.
 
-You can also test a single word with the `-w WORD` option:
+You can test a single word with the `-w WORD` option:
 ```
 WORDLE_LOGGING=0 && ./SolverTest.py -w elbow
 Solved: YIELD in 3 guesses: 
 OATER, LYSIN, YIELD
 ```
 
-You can also find the rank of a word in the overall word scores with the `-r WORD` option:
+You can find the rank of a word in the overall word scores with the `-r WORD` option:
 ```
 joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -r salet
 63/12953
@@ -90,19 +93,20 @@ Your next guess should be: COYLY
 What is your next guess? coyly
 You entered: COYLY
 Please enter green letters in a string like '__A__' (or ENTER for none) coyly
-We won in 3 guesses!
+You won 😉 in 3 guesses!
 ```
 
 ## Finding the Best Starting Word
-Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait a long time. This script will loop over all 12952 answer and guess words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each starting word is finished. As of this update, the best starting word is EARST with an average of 3.9348 guesses per puzzle.
+Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait _a long time_. This script will loop over all 12952 answer and guess words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each starting word is finished. As of this update, the best starting word is EARST with an average of 3.9348 guesses per puzzle.
 
 ## The Algorithm
 The algorithm has two separate word lists. The property `answers` is populated from nyt-answers.txt and the property `exclusive_words` is populated from a combination of 'nyt-guesses.txt' and 'nyt-answers.txt'. `exclusive_words` is a python list that is initially sorted by the popularity of letters in each word. This is best for pruning the list of answers as fast as possible. `answers` is a python list that is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
 
 After each guess, the algorithm finds the next best guess using the following steps:
 
-1. First, it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in all previous guesses. As each guess is made (and the algorithm receives or generates feedback on the hits/misses from that guess) the possible exclusive guesses are pruned so as not to include any previously used letters. After each guess, `answers` is also pruned but inclusively, meaning it prunes out any words that have gray letters, any words that don't have yellow letters and any words that don't have green letters in their correct indices. See method `_word_should_be_kept()` for more info.
-2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. It will look at the set of letters contained by remaining answers and subtract the set of letters that have already been matched in guesses. From this set, it will find a word (using all original words) that has the most number of these letters. This helps prune answers when they have many common letters.
-3. As soon as the answers are pruned down to less than 2 or less, it will pick the answer with the highest word score, and then finally the last remaining answer if necessary.
+1. First, it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in all previous guesses. As each guess is made (and the Solver class provides feedback on the green, yellow and gray letters from that guess) the possible exclusive guesses are pruned so as not to include any previously used letters. After each guess, `answers` is also pruned but inclusively, meaning it prunes out any words that have gray letters, any words that don't have yellow letters and any words that don't have green letters in their correct spots. See method `_word_should_be_kept()` for more info.
+2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. It will look at the set of letters contained by remaining answers and subtract the set of letters that have already been matched in guesses (see `LetterFeedback` class). From this set, it will find a word (using all original words) that has the most number of these letters. This helps prune answers when they have many common letters.
+3. As soon as the answers are pruned down to less than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
-The words are sorted in descending order by the frequency of their letters within the remaining inclusive word list and then given an overall word score. Duplicate letters are intrinsically detrimental to the score of words. This ensures that whenever we have multiple options we pick the one with the highest likelihood of being the target word.
+## Contributions
+If you use this or would like to contribute, please let me know. I am not interested in solutions that precompute the best path for every word and cache them. I don't find those solutions very compelling.
