@@ -18,8 +18,8 @@ elif args.word:
     solution = Solver(args.word.strip().upper()).solve()
     print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
     print(', '.join(solution.guesses))
-
 else:
+    starting_word = "EARST"
     dictionary = (args.dictionary if args.dictionary else "nyt-answers.txt")
     count = 0
     scores = dict()
@@ -30,7 +30,7 @@ else:
     with open(dictionary, 'r') as words:
         for word in words:
             count += 1
-            solution = Solver(word.strip().upper()).solve("SALET")
+            solution = Solver(word.strip().upper()).solve(starting_word)
             score += solution.guess_count
             if solution.guess_count > 6:
                 hardest_words.append(word)
@@ -54,11 +54,11 @@ else:
         print(str(name) + ": " + words[index])
 
 
-    filename = f'results-{avg}'
+    filename = f'results-{starting_word}-{avg}'
     f = open(f'{filename}.txt', "w")
     for index, name in enumerate(names):
         f.write(f'{str(name)}: {words[index]}\n')
     f.close()
 
-    plt.barh(range(len(sorted_scores)), values, tick_label=names)
+    plt.barh(range(len(sorted_scores)), values, tick_label=names, color=(228.0/256.0, 88.0/256.0, 151.0/256.0, 1.0))
     plt.savefig(f'{filename}.png')
