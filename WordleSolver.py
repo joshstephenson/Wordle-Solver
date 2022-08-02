@@ -400,11 +400,24 @@ class Solver:
         for letter in string.upper():
             self.puzzle.miss(letter)
 
-    def guess(self, word):
-        self.puzzle.add_guess(word.upper())
+    def guess(self, word, in_place, out_of_place):
+        out_of_place = out_of_place.upper() if out_of_place else ""
+        in_place = in_place.upper() if in_place else ""
+        word = word.upper()
+        self.puzzle.add_guess(word)
+        unused = set([letter for letter in word])
+        for index, letter in enumerate(in_place):
+            if letter != "_":
+                self.puzzle.hit(letter, index)
+                unused.remove(letter)
+        for letter in out_of_place:
+            self.puzzle.hit(letter, -1)
+            unused.remove(letter)
+        for letter in unused:
+            self.puzzle.miss(letter)
 
-    def next_guess(self, answer = False):
-        return self.puzzle.next_guess(answer)
+    def next_guess(self):
+        return self.puzzle.next_guess()
 
     def matches(self, answer = False):
         return self.puzzle.matches(answer)
