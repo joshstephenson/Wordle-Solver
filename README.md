@@ -38,6 +38,8 @@ WORDLE_LOGGING=0 && ./SolverTest.py
 ...
 ```
 
+For debugging purposes, you can enable logging with `WORDLE_LOGGING=1` in your OS environment.
+
 To test a single word:
 ```
 WORDLE_LOGGING=0 && ./SolverTest.py -w elbow
