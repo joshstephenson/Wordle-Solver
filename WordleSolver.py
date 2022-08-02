@@ -244,7 +244,6 @@ class Dictionary:
         return f'Dictionary\n{list(map(lambda x: x, words.frequency.values()))}'
 
     def log(self):
-#        log(*list(map(lambda x: x, self.frequency.values())), sep = '\n')
         log(*list(map(lambda x: x, self.letters_by_position.items())), sep = '\n')
 
 class LetterFeedback:
