@@ -79,20 +79,28 @@ This is the most useful thing you might want to use while you are actually solvi
 
 Example:
 ```
-joshstephenson@~/Projects/Wordle-Solver$ ./WordleInteractive.py 
-What is your first word guess? May I recommend OATER? salet
+joshuastephenson@~/Projects/Wordle-Solver$ ./WordleInteractive.py 
+What is your first word guess? May I recommend OATER?
+> salet
 You entered: SALET
-Please enter green letters in a string like '__A__' (or ENTER for none) 
-Please enter yellow letters (or ENTER for none) l
+Please enter green letters (or ENTER for none)
+>  
+Please enter yellow letters (or ENTER for none)
+> l
 Your next guess should be: CORNI
-What is your next guess? corni
+What is your next guess?
+> corni
 You entered: CORNI
-Please enter green letters in a string like '__A__' (or ENTER for none) co___
-Please enter yellow letters (or ENTER for none) 
+Please enter green letters (or ENTER for none)
+> co
+Please enter yellow letters (or ENTER for none)
+> 
 Your next guess should be: COYLY
-What is your next guess? coyly
+What is your next guess?
+> coyly
 You entered: COYLY
-Please enter green letters in a string like '__A__' (or ENTER for none) coyly
+Please enter green letters in a string like '__A__' (or ENTER for none)
+> coyly
 You won 😉 in 3 guesses!
 ```
 
