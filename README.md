@@ -6,6 +6,11 @@ This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/ga
 - letters in the word and in the correct position (green)
 - letters not in the word at all (gray)
 
+## Performance
+![results-4 0575](https://user-images.githubusercontent.com/11002/182266138-b42cf540-0fdf-4677-be6f-9427df93e005.png)
+
+Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer. There are currently 10 words that aren't solved within 6 guesses with elbow, the worst offender at 8 guesses.
+
 ## About the Program
 There are two dictionaries provided by the NYTimes for Wordle. One is for valid guesses which is around ten thousand words and the other is for valid answers which is only around 2300 words. Both are included in this repository.
 
@@ -77,8 +82,3 @@ The algorithm has two distinct word lists. The `answers` list is populated from 
 As the inclusive word list is updated, the frequency of letters available in the inclusive list is continually updated and then both word lists are resorted based on the composition of the new letter frequency. This ensures that each guess cuts the word list down maximally.
 
 The words are sorted in decreasing order by the frequency of their letters within the remaining inclusive word list and then given an overall word score. Duplicate letters are intrinsically detrimental to the score of words. This ensures that whenever we have multiple options we pick the one with the highest likelihood of being the target word.
-
-## Performance
-![results-4 0575](https://user-images.githubusercontent.com/11002/182266138-b42cf540-0fdf-4677-be6f-9427df93e005.png)
-
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer. There are currently 10 words that aren't solved within 6 guesses with elbow, the worst offender at 8 guesses.
