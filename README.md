@@ -7,7 +7,7 @@ This is a Python script to solve the [NYTimes Wordle](https://www.nytimes.com/ga
 - Letters that are not included in the target word will be marked gray.
 
 ## Performance
-![results-3 9706](https://user-images.githubusercontent.com/11002/182399042-b6e3286c-c075-43e2-97d9-cb57c4ec8c14.png)
+![results-EARST-3 9348](https://user-images.githubusercontent.com/11002/182449278-57b8f3ed-ed26-4b3b-9181-13220b4c10a0.png)
 
 Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solved 99.6% in 6 guesses or fewer and 74% in 4 guesses or fewer. There are currently 8 words that aren't solved within the 6 guess limit.
 
