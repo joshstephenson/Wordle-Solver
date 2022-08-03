@@ -1,8 +1,9 @@
 # Python Wordle Solver
-This is a Python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goal is threefold: 
+This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goals of this project are:
 1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses. 
 2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle with the starting word EARST.
 3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed.
+4. To provide an interactive tool that helps select the next best guess while playing the game online.
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
@@ -109,7 +110,7 @@ After each guess, the algorithm finds the next best guess using the following st
 2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. It will look at the set of letters contained by remaining answers and subtract the set of letters that have already been matched in guesses (see `LetterFeedback` class). From this set, it will find a word (using all original words) that has the most number of these letters. This helps prune answers when they have many common letters.
 3. As soon as the answers are pruned down to less than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
-## Most Popular Letters for Each Position of Five Letter Words
+## Most Popular Letters for Each Position in Five Letter English Words
 - S is the most frequent starting letter.
 - A is the most frequent second and third letter.
 - E is the most frequent fourth and fifth letter.
@@ -127,20 +128,20 @@ Position|Letter:Frequency in Answers
 With these frequencies, we can calculate a score for each word based on the letters it has in positions 1 through 5. The 100 highest scoring words are, in order:
 
 ```
-OATER, ORATE, ROATE, REALO, ARTEL, RATEL, TALER, ALERT, ALTER, LATER, 
-AEROS, SOARE, AROSE, RETIA, TERAI, IRATE, ARETS, ASTER, EARST, RATES, 
-REAST, RESAT, STEAR, STRAE, TARES, TASER, TEARS, TERAS, STARE, ARIEL, 
-RAILE, ARLES, EARLS, LAERS, LARES, LASER, LEARS, RALES, REALS, SERAL, 
-AESIR, REAIS, SERAI, ARISE, RAISE, ANTRE, EARNT, NERAL, LEARN, RENAL, 
-STOAE, TOEAS, RAINE, EARNS, NARES, NEARS, REANS, SANER, SNARE, ALOES, 
-OCREA, TELIA, LEATS, SALET, SETAL, STELA, TAELS, TALES, TEALS, TESLA, 
-LEAST, SLATE, STALE, STEAL, CARET, CARTE, RECTA, CATER, CRATE, REACT, 
-TRACE, CARLE, LACER, RECAL, URATE, CLEAR, ALURE, UREAL, ESTRO, RESTO, 
-ROSET, ROTES, TORES, TORSE, STORE, OILER, ORIEL, REOIL, EORLS, LORES
+1-10:   OATER, ORATE, ROATE, REALO, ARTEL, RATEL, TALER, ALERT, ALTER, LATER, 
+11-20:  AEROS, SOARE, AROSE, RETIA, TERAI, IRATE, ARETS, ASTER, EARST, RATES, 
+21-30:  REAST, RESAT, STEAR, STRAE, TARES, TASER, TEARS, TERAS, STARE, ARIEL, 
+31-40:  RAILE, ARLES, EARLS, LAERS, LARES, LASER, LEARS, RALES, REALS, SERAL, 
+41-50:  AESIR, REAIS, SERAI, ARISE, RAISE, ANTRE, EARNT, NERAL, LEARN, RENAL, 
+51-60:  STOAE, TOEAS, RAINE, EARNS, NARES, NEARS, REANS, SANER, SNARE, ALOES, 
+61-70:  OCREA, TELIA, LEATS, SALET, SETAL, STELA, TAELS, TALES, TEALS, TESLA, 
+71-80:  LEAST, SLATE, STALE, STEAL, CARET, CARTE, RECTA, CATER, CRATE, REACT, 
+81-90:  TRACE, CARLE, LACER, RECAL, URATE, CLEAR, ALURE, UREAL, ESTRO, RESTO, 
+91-100: ROSET, ROTES, TORES, TORSE, STORE, OILER, ORIEL, REOIL, EORLS, LORES
 ```
 
-## Finding the Best Starting Word
-Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait _a long time_. This script will loop over all 12952 answer and guess words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each starting word is finished. As of this update, the best starting word is EARST with an average of 3.9348 guesses per puzzle.
+## Find the Best Starting Word
+Using the right starting word makes a big difference. While OATER has the highest calculated score, with this algorithm EARST has the lowest average number of guesses of 3.9348. If you modify the algorithm and want to find the best starting word, use the script `FindStartingWord.py` and wait a _long time_ 😇. This script will loop over all 12952 valid answers and guesses calculating the average number of guesses to arrive at each of the 2315 answer words. It will print out the best performance so far after each starting word is finished.
 
 ## Contributions
 If you use this or would like to contribute, feel free to fork, contact me or submit a PR. Please note: I am not interested in solutions that precompute the best path for every word and cache them. I don't find solutions of that kind very compelling.
