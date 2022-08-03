@@ -77,27 +77,27 @@ This is the most useful thing you might want to use while you are actually solvi
 Example:
 ```
 joshuastephenson@~/Projects/Wordle-Solver$ ./WordleInteractive.py 
-What is your first word guess? May I recommend EARST?
-> salet
-You entered: SALET
-Please enter green letters (or ENTER for none)
->  
-Please enter yellow letters (or ENTER for none)
-> l
-Your next guess should be: CORNI
-What is your next guess?
-> corni
-You entered: CORNI
-Please enter green letters (or ENTER for none)
-> co
-Please enter yellow letters (or ENTER for none)
+What is your first word guess? (press ENTER for EARST) 
 > 
-Your next guess should be: COYLY
-What is your next guess?
-> coyly
-You entered: COYLY
-Please enter green letters in a string like '__A__' (or ENTER for none)
-> coyly
+You entered: EARST
+Please enter green letters (press ENTER for none)
+> t
+Please enter yellow letters (press ENTER for none)
+> ear
+Your next guess should be: GULCH
+What is your next guess? (press ENTER for GULCH)
+> 
+You entered: GULCH
+Please enter green letters (press ENTER for none)
+> 
+Please enter yellow letters (press ENTER for none)
+> l
+Your next guess should be: ALERT
+What is your next guess? (press ENTER for ALERT)
+> 
+You entered: ALERT
+Please enter green letters (press ENTER for none)
+> alert
 You won 😉 in 3 guesses!
 ```
 
