@@ -1,8 +1,9 @@
 # Python Wordle Solver
-This is a Python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goal is threefold: 
+This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goals of this project are:
 1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses. 
 2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle with the starting word EARST.
 3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed.
+4. To provide an interactive tool that helps select the next best guess while playing the game online.
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
