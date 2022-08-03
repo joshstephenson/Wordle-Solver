@@ -20,8 +20,10 @@ while not is_solved:
     else:
         green = input('Please enter green letters (or ENTER for none)\n> ')
         green_string = ""
-        for index, letter in enumerate(green.upper()):
-            green_string += letter if word[index] == letter else "_"
+        green_letters = [letter for letter in green.upper()]
+        for index, letter in enumerate(word):
+            green_string += letter if letter in green_letters else "_"
+        green = green_string
 
     if green.upper() == word:
         is_solved = True
