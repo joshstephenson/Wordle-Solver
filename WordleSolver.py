@@ -140,7 +140,7 @@ class Dictionary:
         """
         word = word.upper()
         count = len(self.all_words)
-        index = self.all_words.index(word)
+        index = self.all_words.index(word)+1
         return f'{index}/{count}'
 
     def score_of(self, word):
