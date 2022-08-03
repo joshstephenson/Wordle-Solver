@@ -140,7 +140,7 @@ ROSET, ROTES, TORES, TORSE, STORE, OILER, ORIEL, REOIL, EORLS, LORES
 ```
 
 ## Finding the Best Starting Word
-Using the right starting word makes a big difference. While OATER has the highest calculated score, many believe SALET to be the best starting word. To find the best starting word, use the script `FindStartingWord.py` and wait _a long time_. This script will loop over all 12952 answer and guess words calculating the average number of guesses to solve each of the 2315 answer words. It will print out the best performance so far after each starting word is finished. As of this update, the best starting word is EARST with an average of 3.9348 guesses per puzzle.
+Using the right starting word makes a big difference. While OATER has the highest calculated score, with this algorithm EARST has the lowest average number of guesses of 3.9348. If you modify the algorithm and want to find the best starting word, use the script `FindStartingWord.py` and wait a _long time_ 😇. This script will loop over all 12952 valid answers and guesses calculating the average number of guesses to arrive at each of the 2315 answer words. It will print out the best performance so far after each starting word is finished.
 
 ## Contributions
 If you use this or would like to contribute, feel free to fork, contact me or submit a PR. Please note: I am not interested in solutions that precompute the best path for every word and cache them. I don't find solutions of that kind very compelling.
