@@ -1,9 +1,9 @@
 # Python Wordle Solver
 This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goals of this project are:
 1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses. 
-2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle with the starting word EARST.
+2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle, starting with "EARST".
 3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed.
-4. To provide an interactive tool that helps select the next best guess while playing the game online.
+4. To provide [an interactive tool](#interactive-solver) that helps select the next best guess while playing the game online.
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
@@ -51,21 +51,21 @@ For debugging purposes, you can enable logging with `WORDLE_LOGGING=1 && ./Solve
 
 You can test a single word with the `-w WORD` option:
 ```
-./SolverTest.py -w elbow
-Solved: YIELD in 3 guesses: 
-OATER, LYSIN, YIELD
+./SolverTest.py -w alert
+Solved: ALERT in 3 guesses: 
+EARST, GULCH, ALERT
 ```
 
 You can find the rank of a word in the overall word scores with the `-r WORD` option:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -r salet
-63/12953
+joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -r alert
+8/12953
 ```
 
 And finally, you can get the individual score of a word with the `-s WORD` option:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -s salet
-4324
+joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -s alert
+4554
 ```
 
 ## Interactive Solver
@@ -77,27 +77,27 @@ This is the most useful thing you might want to use while you are actually solvi
 Example:
 ```
 joshuastephenson@~/Projects/Wordle-Solver$ ./WordleInteractive.py 
-What is your first word guess? May I recommend EARST?
-> salet
-You entered: SALET
-Please enter green letters (or ENTER for none)
->  
-Please enter yellow letters (or ENTER for none)
-> l
-Your next guess should be: CORNI
-What is your next guess?
-> corni
-You entered: CORNI
-Please enter green letters (or ENTER for none)
-> co
-Please enter yellow letters (or ENTER for none)
+What is your first word guess? (press ENTER for EARST) 
 > 
-Your next guess should be: COYLY
-What is your next guess?
-> coyly
-You entered: COYLY
-Please enter green letters in a string like '__A__' (or ENTER for none)
-> coyly
+You entered: EARST
+Please enter green letters (press ENTER for none)
+> t
+Please enter yellow letters (press ENTER for none)
+> ear
+Your next guess should be: GULCH
+What is your next guess? (press ENTER for GULCH)
+> 
+You entered: GULCH
+Please enter green letters (press ENTER for none)
+> 
+Please enter yellow letters (press ENTER for none)
+> l
+Your next guess should be: ALERT
+What is your next guess? (press ENTER for ALERT)
+> 
+You entered: ALERT
+Please enter green letters (press ENTER for none)
+> alert
 You won 😉 in 3 guesses!
 ```
 
@@ -106,8 +106,8 @@ The algorithm has two separate word lists. The property `answers` is populated f
 
 After each guess, the algorithm finds the next best guess using the following steps:
 
-1. First, it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in all previous guesses. As each guess is made (and the Solver class provides feedback on the green, yellow and gray letters from that guess) the possible exclusive guesses are pruned so as not to include any previously used letters. After each guess, `answers` is also pruned but inclusively, meaning it prunes out any words that have gray letters, any words that don't have yellow letters and any words that don't have green letters in their correct spots. See method `_word_should_be_kept()` for more info.
-2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. It will look at the set of letters contained by remaining answers and subtract the set of letters that have already been matched in guesses (see `LetterFeedback` class). From this set, it will find a word (using all original words) that has the most number of these letters. This helps prune answers when they have many common letters.
+1. First, it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in all previous guesses and they are always words with the highest word score for letters _irrespective_ of their positions. As each guess is made (and the Solver class provides feedback on the green, yellow and gray letters from that guess) the possible exclusive guesses are pruned so as not to include any previously used letters. Sorting is preserved, so the first item is always the highest scoring word. After each guess, `answers` is also pruned but inclusively, meaning it removes words that have gray letters, words that don't have yellow letters, and words that don't have green letters in their correct spots. See method `_word_should_be_kept()` for more info. The scoring of words in answers corresponds to the composition of letters _respective_ of their positions.
+2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. To do this, it will look at the distinct set of letters in remaining answers and subtract the set of letters that have already been matched in guesses (see `LetterFeedback` class). From this target set, it will find a word (using all original words) that has the most number of these letters. Note that it may select a word with previously used letters in order to capture the highest number of target letters. This helps prune answers when they have many common letters.
 3. As soon as the answers are pruned down to less than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
 ## Most Popular Letters for Each Position in Five Letter English Words
