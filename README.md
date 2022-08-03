@@ -110,7 +110,7 @@ After each guess, the algorithm finds the next best guess using the following st
 2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. It will look at the set of letters contained by remaining answers and subtract the set of letters that have already been matched in guesses (see `LetterFeedback` class). From this set, it will find a word (using all original words) that has the most number of these letters. This helps prune answers when they have many common letters.
 3. As soon as the answers are pruned down to less than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
-## Most Popular Letters for Each Position of Five Letter Words
+## Most Popular Letters for Each Position in Five Letter English Words
 - S is the most frequent starting letter.
 - A is the most frequent second and third letter.
 - E is the most frequent fourth and fifth letter.
@@ -140,7 +140,7 @@ TRACE, CARLE, LACER, RECAL, URATE, CLEAR, ALURE, UREAL, ESTRO, RESTO,
 ROSET, ROTES, TORES, TORSE, STORE, OILER, ORIEL, REOIL, EORLS, LORES
 ```
 
-## Finding the Best Starting Word
+## Find the Best Starting Word
 Using the right starting word makes a big difference. While OATER has the highest calculated score, with this algorithm EARST has the lowest average number of guesses of 3.9348. If you modify the algorithm and want to find the best starting word, use the script `FindStartingWord.py` and wait a _long time_ 😇. This script will loop over all 12952 valid answers and guesses calculating the average number of guesses to arrive at each of the 2315 answer words. It will print out the best performance so far after each starting word is finished.
 
 ## Contributions
