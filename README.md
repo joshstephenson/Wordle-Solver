@@ -51,21 +51,21 @@ For debugging purposes, you can enable logging with `WORDLE_LOGGING=1 && ./Solve
 
 You can test a single word with the `-w WORD` option:
 ```
-./SolverTest.py -w elbow
-Solved: YIELD in 3 guesses: 
-OATER, LYSIN, YIELD
+./SolverTest.py -w alert
+Solved: ALERT in 3 guesses: 
+EARST, GULCH, ALERT
 ```
 
 You can find the rank of a word in the overall word scores with the `-r WORD` option:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -r salet
-63/12953
+joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -r alert
+8/12953
 ```
 
 And finally, you can get the individual score of a word with the `-s WORD` option:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -s salet
-4324
+joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -s alert
+4554
 ```
 
 ## Interactive Solver
