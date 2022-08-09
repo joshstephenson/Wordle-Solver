@@ -3,7 +3,7 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses. 
 2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle, starting with "EARST".
 3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed.
-4. To provide [an interactive tool](#interactive-solver) that helps select the next best guess while playing the game online.
+4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess.
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:

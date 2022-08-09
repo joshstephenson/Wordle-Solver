@@ -1,4 +1,5 @@
-#!/Library/Frameworks/Python.framework/Versions/Current/bin/python3
+#!/usr/bin/env python3
+
 from WordleSolver import Solver
 from WordleSolver import Dictionary
 import matplotlib.pyplot as plt
