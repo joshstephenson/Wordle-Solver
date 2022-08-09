@@ -1,9 +1,9 @@
 # Python Wordle Solver
 This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goals of this project are:
-1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there are 11 words that require 7 guesses. 
-2. To achieve the lowest possible guess average which is currently 3.9348 guesses per puzzle, starting with "EARST".
-3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed.
-4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess.
+1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there is 1 word (`RIPER`) that requires 7 guesses.
+2. To achieve the lowest possible guess average which is currently 3.7434 guesses per puzzle, starting with `SLATE`.
+3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than other solvers that use backtracking to determine the minimum possible average (3.42).
+4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
@@ -12,19 +12,49 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 - Letters that are not included in the target word will be marked gray.
 
 ## Performance
-![results-EARST-3 9348](https://user-images.githubusercontent.com/11002/182449278-57b8f3ed-ed26-4b3b-9181-13220b4c10a0.png)
+![results-SLATE-3 7434](https://user-images.githubusercontent.com/11002/183754823-f7910927-6d2c-4bc3-94dc-25d8833e62cf.png)
 
-Out of 2315 Wordle puzzles (included in "nyt-answers.txt" file), this algorithm solves 99.5% in 6 guesses or fewer and 79% in 4 guesses or fewer. There are currently 11 words that aren't solved within the 6 guess limit: ASSAY, AWARE, BEZEL, FETAL, GRAZE, OFFER, REGAL, RIDER, RIPER, ROGER & SHALL which all require 7 guesses.
+Out of 2315 Wordle puzzles, this algorithm solves all but one word in 6 guesses or fewer and 86.6% in 4 guesses or fewer. 
 
-## Dictionaries
-There are two dictionaries provided by the NYTimes for Wordle:
-- [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt) 2315 words which are valid puzzle answers and can also be used as guesses.
-- [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt) 10637 words which can be used as guesses but will not be used as puzzle answers.
+## Word lists
+There are two dictionaries NYTimes uses for Wordle:
+- [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt) includes 2315 words which are valid puzzle answers.
+- [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt) includes 10637 words which can only be used as guesses but will not be solutions to daily puzzles.
+
+## How it Works (the algorithm)
+The `answers` list is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
+
+At the start and after each guess, the algorithm finds the next best guess using the following steps:
+
+1. If the count of available answers (starting at 2315) is above 50, then it simply returns the highest scoring answer.
+2. After comparing each guess against the target word, it will tally the green, yellow and gray letters. This will be used to prune the remaining answers. See below for more information.
+3. As soon as the answers are pruned down to fewer than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
+
+### How words are pruned based on green, yellow and gray letters
+After each guess, the answer list is pruned so that:
+* Words without green letters in the right position are removed
+* Words without yellow letters are removed
+* Words with gray letters are removed
+  
+NOTE: Initial implementations missed one important improvement: Yellow letters are not letters in any position, they are letters in only 4 possible positions. Therefore the second bullet above was updated to:
+* Words (without yellow letters) OR (with yellow letters in the same position they have already been tried) are removed.
+
+Once the answers are pruned to fewer than 50 words, but greater than 2 (usually after one or two guesses), the algorithm will try to make a blended match I call an _intersecting match_. To do this, it will look at the set (no duplicates) of letters in the answer list and subtract the set of letters that have already been matched in guesses. From this target set, it will find a word (using a combination of `guesses` and `answers`) that has the most number of these letters. Note that it may select a word with previously used letters in order to capture the highest number of target letters. This helps prune answers when they have many common letters.
+
+#### Example: the target word is HOUND.
+The algorithm will start by guessing `SLATE` and then `CRONY` which will yield a green match on `N` in the 4th position and a yellow match on `O`. Once we filter out all the words that:
+1. Don't have an `O` or have an `O` in the third position.
+2. Don't have an `N` in the 4th position.
+3. Have any of the gray letters: `{S,L,A,T,E,C,R,Y}`.
+
+This will only leave 9 words in the answer list: `{BOUND, POUND, FOUND, DOING, MOUND, GOING, WOUND, HOUND, OWING}`.
+As you can see, most of these words have 4 of the same letters and most are in the same position, so if we were to continue with the algorithm as is, it would take 8 guesses to solve `HOUND`. That's why it makes more sense here to take the letters `{M, H, D, U, G, F, W, Z, J, Q}` (letters that are in the answer list but have not been matched as green or yellow yet) and find a word with as many of those letters as possible. In this case, the word `HUMID` does well, and after that the answer list is down to just one word: `HOUND`. With this improvement it only takes 4 guesses to solve it: `SLATE>CRONY>HUMID>HOUND`
+
 
 ## Usage
 The current version can be used in 2 different ways:
 
-First, by running [SolverTest.py](https://github.com/joshstephenson/Wordle-Solver/blob/main/SolverTest.py) with no arguments it will parse the entire answer list and solve them, printing out the words it used to guess and total number of guesses. It will also print out a running average of guesses per answer.
+First, by running [SolverTest.py](https://github.com/joshstephenson/Wordle-Solver/blob/main/SolverTest.py) with no arguments it will parse the entire answer list and solve them, printing out a running average, the word it solved, the number of guesses and the word path for each answer.
 
 Example:
 ```
@@ -32,22 +62,28 @@ Example:
 ```
 
 ```
-4.1111 ANODE(3): EARST, COLIN, ANODE
-4.0989 ANTIC(3): EARST, COLIN, ANTIC
-4.0978 ANVIL(4): EARST, COLIN, PLAIN, ANVIL
-4.086  AORTA(3): EARST, COYED, AORTA
-4.0851 APART(4): EARST, CHINO, PUDGE, APART
-4.0842 APHID(4): EARST, COLIN, HAMED, APHID
-4.0833 APING(4): EARST, COLIN, AMPED, APING
-4.0825 APNEA(4): EARST, COLIN, HYPED, APNEA
-4.0918 APPLE(5): EARST, COLIN, DUMPY, LAPEL, APPLE
-4.0909 APPLY(4): EARST, COLIN, DUMPY, APPLY
-4.09   APRON(4): EARST, COLIN, BARON, APRON
-4.0891 APTLY(4): EARST, COLIN, UPBYE, APTLY
+3.7428 HYDRO(3): SLATE, CRONY, HYDRO
+3.7429 VIVID(4): SLATE, CRONY, HUMID, VIVID
+3.7426 LUPUS(3): SLATE, COYPU, LUPUS
+3.7427 LYMPH(4): SLATE, CURLY, HOING, LYMPH
+3.7428 ABYSS(4): SLATE, CORNI, BOGEY, ABYSS
+3.7429 HUMUS(4): SLATE, CORNI, DUMPY, HUMUS
+3.7435 JUMBO(5): SLATE, CRONY, HUMID, GUMBO, JUMBO
+3.7436 ETHIC(4): SLATE, TRIED, BENCH, ETHIC
+3.7437 UNZIP(4): SLATE, CRONY, GUIMP, UNZIP
+3.7438 UMBRA(4): SLATE, FAIRY, BUNCO, UMBRA
+3.7439 MIMIC(4): SLATE, CRONY, BUMPH, MIMIC
+3.7436 AFFIX(3): SLATE, FAIRY, AFFIX
+3.7433 ETHOS(3): SLATE, CORNI, ETHOS
+3.7434 INBOX(4): SLATE, CRONY, GUIDE, INBOX
+3.7431 NYMPH(3): SLATE, CRONY, NYMPH
+3.7432 ENNUI(4): SLATE, BONEY, MUCID, ENNUI
+3.7437 IGLOO(5): SLATE, CURLY, POIND, LIMBO, IGLOO
+3.7434 IDYLL(3): SLATE, CURLY, IDYLL
 ...
 ```
 
-For debugging purposes, you can enable logging with `WORDLE_LOGGING=1 && ./SolverTest.py`.
+For debugging purposes, you can enable logging with `export WORDLE_LOGGING=1; ./SolverTest.py`.
 
 You can test a single word with the `-w WORD` option:
 ```
@@ -101,15 +137,6 @@ Please enter green letters (press ENTER for none)
 You won 😉 in 3 guesses!
 ```
 
-## The Algorithm
-The algorithm has two separate word lists. The property `answers` is populated from nyt-answers.txt and the property `exclusive_words` is populated from a combination of 'nyt-guesses.txt' and 'nyt-answers.txt'. `exclusive_words` is a python list that is initially sorted by the popularity of letters in each word. This is best for pruning the list of answers as fast as possible. `answers` is a python list that is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
-
-After each guess, the algorithm finds the next best guess using the following steps:
-
-1. First, it attempts to make exclusive guesses. These are guesses that don't use any of the letters used in all previous guesses and they are always words with the highest word score for letters _irrespective_ of their positions. As each guess is made (and the Solver class provides feedback on the green, yellow and gray letters from that guess) the possible exclusive guesses are pruned so as not to include any previously used letters. Sorting is preserved, so the first item is always the highest scoring word. After each guess, `answers` is also pruned but inclusively, meaning it removes words that have gray letters, words that don't have yellow letters, and words that don't have green letters in their correct spots. See method `_word_should_be_kept()` for more info. The scoring of words in answers corresponds to the composition of letters _respective_ of their positions.
-2. As soon as the answers are pruned down to less than 100 words, but greater than 3 (usually after one guess), the algorithm will try to make a blended match I call an _intersecting match_. To do this, it will look at the distinct set of letters in remaining answers and subtract the set of letters that have already been matched in guesses (see `LetterFeedback` class). From this target set, it will find a word (using all original words) that has the most number of these letters. Note that it may select a word with previously used letters in order to capture the highest number of target letters. This helps prune answers when they have many common letters.
-3. As soon as the answers are pruned down to less than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
-
 ## Most Popular Letters for Each Position in Five Letter English Words
 - S is the most frequent starting letter.
 - A is the most frequent second and third letter.
@@ -125,23 +152,15 @@ Position|Letter:Frequency in Answers
 4|E:318, N:182, S:171, A:163, L:162, I:158, C:152, R:152, T:139, O:132, U:82, G:76, D:69, M:68, K:55, P:50, V:46, F:35, H:28, W:25, B:24, Z:20, Y:3, X:3, J:2, Q:0
 5|E:424, Y:364, T:253, R:212, L:156, H:139, N:130, D:118, K:113, A:64, O:58, P:56, M:42, G:41, S:36, C:31, F:26, W:17, B:11, I:11, X:8, Z:4, U:1, V:0, J:0, Q:0
 
-With these frequencies, we can calculate a score for each word based on the letters it has in positions 1 through 5. The 100 highest scoring words are, in order:
+With these frequencies, we can calculate a score for each word based on the letters it has in positions 1 through 5. The 50 highest scoring answer words are, in order:
 
 ```
-1-10:   OATER, ORATE, ROATE, REALO, ARTEL, RATEL, TALER, ALERT, ALTER, LATER, 
-11-20:  AEROS, SOARE, AROSE, RETIA, TERAI, IRATE, ARETS, ASTER, EARST, RATES, 
-21-30:  REAST, RESAT, STEAR, STRAE, TARES, TASER, TEARS, TERAS, STARE, ARIEL, 
-31-40:  RAILE, ARLES, EARLS, LAERS, LARES, LASER, LEARS, RALES, REALS, SERAL, 
-41-50:  AESIR, REAIS, SERAI, ARISE, RAISE, ANTRE, EARNT, NERAL, LEARN, RENAL, 
-51-60:  STOAE, TOEAS, RAINE, EARNS, NARES, NEARS, REANS, SANER, SNARE, ALOES, 
-61-70:  OCREA, TELIA, LEATS, SALET, SETAL, STELA, TAELS, TALES, TEALS, TESLA, 
-71-80:  LEAST, SLATE, STALE, STEAL, CARET, CARTE, RECTA, CATER, CRATE, REACT, 
-81-90:  TRACE, CARLE, LACER, RECAL, URATE, CLEAR, ALURE, UREAL, ESTRO, RESTO, 
-91-100: ROSET, ROTES, TORES, TORSE, STORE, OILER, ORIEL, REOIL, EORLS, LORES
+1-10:   SLATE, SAUCE, SLICE, SHALE, SAUTE, SHARE, SHINE, SUITE, CRANE, SAINT
+11-20:  SOAPY, SHONE, SHIRE, SAUCY, SLAVE, SANER, SNARE, STALE, CRATE, SHORE
+21-30:  SUAVE, SLIDE, STARE, SLIME, BRACE, SHINY, CRONE, BRINE, SHADE, SPACE
+31-40:  SPARE, SHAME, SLANT, SCALE, SPINE, TRACE, SHAKE, STONE, SHAPE, SCARE
+41-50:  SHAVE, SALTY, SLOPE, SINCE, POISE, SWINE, BONEY, SNORE, STOLE, SADLY
 ```
-
-## Find the Best Starting Word
-Using the right starting word makes a big difference. While OATER has the highest calculated score, with this algorithm EARST has the lowest average number of guesses of 3.9348. If you modify the algorithm and want to find the best starting word, use the script `FindStartingWord.py` and wait a _long time_ 😇. This script will loop over all 12952 valid answers and guesses calculating the average number of guesses to arrive at each of the 2315 answer words. It will print out the best performance so far after each starting word is finished.
 
 ## Contributions
 If you use this or would like to contribute, feel free to fork, contact me or submit a PR. Please note: I am not interested in solutions that precompute the best path for every word and cache them. I don't find solutions of that kind very compelling.
