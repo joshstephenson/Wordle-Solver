@@ -57,9 +57,9 @@ class Dictionary:
         self.frequency = self._generate_letter_frequency(answers)
         self.letters_by_position = self._sort_letters()
 
-        self.word_scores = self._word_scores(guesses + answers, False)
-        self.all_words = self._sort_by_score(self.word_scores)
-        self.exclusive_words = self.all_words.copy()
+#        self.word_scores = self._word_scores(guesses + answers, False)
+#        self.all_words = self._sort_by_score(self._word_scores(answers))
+#        self.exclusive_words = self.all_words.copy()
         self.answers = self._sort_by_score(self._word_scores(answers))
 
         self.feedback = LetterFeedback()
@@ -159,61 +159,46 @@ class Dictionary:
         log("GUESS: " + guess)
         if guess in self.answers:
             self.answers.remove(guess)
-        if guess in self.all_words:
-            self.all_words.remove(guess)
-        if guess in self.exclusive_words:
-            self.exclusive_words.remove(guess)
+#        if guess in self.all_words:
+#            self.all_words.remove(guess)
+#        if guess in self.exclusive_words:
+#            self.exclusive_words.remove(guess)
 
     def _update(self):
+        # Looping over words is costly, don't do it if we don't need to
         if self.feedback.used() == 0:
             return
         # always update answers first
         self._update_answers()
         # and then guesses after
-        self._update_exclusive_words()
+#        self._update_exclusive_words()
 
-#    def _filter_by_feedback(self, words, inclusive = False):
-#        known = self.feedback.green_by_spots()
-#        grays = ''.join(self.feedback.gray)
-#        re_string = ""
-#        for i in list(range(0,WORD_LENGTH)):
-#            if i in known and inclusive:
-#                re_string += known[i]
-#            elif len(grays) > 0:
-#                re_string += r"[^"
-#                re_string += grays
-#                re_string += r"]"
-#        log("REGEX: " + re_string)
-#        return list(filter(lambda x: re.search(re_string, x) is not None, words))
-
-    def _word_should_be_saved(self, word, inclusive = True):
+    def _word_should_be_saved(self, word):
         """
         Used internally to decide whether or not a word should be removed from a given word list
         based on LetterFeedback (greens, yellows, grays and used)
         """
-        if inclusive:
-            for letter in self.feedback.gray:
-                if letter in word:
-                    return False
-            for letter in self.feedback.green.keys():
-                for position in self.feedback.green[letter]:
-                    if word[position] != letter:
-                        return False
-            for letter in self.feedback.yellow:
-                if letter not in word:
-                    return False
-        else:
-            for letter in self.feedback.used():
-                if letter in word:
-                    return False
+        # Don't save words that have YELLOW letters in yellow spots
+        for position in self.feedback.yellow.keys():
+            letter = self.feedback.yellow[position]
+            if letter not in word or word[position] == letter:
+                return False
+        # Don't save words that have gray letters
+        for letter in self.feedback.gray:
+            if letter in word:
+                return False
+        # Save words that have GREEN letters in green spots
+        for position in self.feedback.green.keys():
+            if word[position] != self.feedback.green[position]:
+                return False
 
         return True
 
     def _update_answers(self):
         self.answers = list(filter(self._word_should_be_saved, self.answers))
 
-    def _update_exclusive_words(self):
-        self.exclusive_words = list(filter(lambda word: self._word_should_be_saved(word, False), self.exclusive_words))
+#    def _update_exclusive_words(self):
+#        self.exclusive_words = list(filter(lambda word: self._word_should_be_saved(word, False), self.exclusive_words))
 
     def intersecting_word(self):
         """
@@ -230,9 +215,8 @@ class Dictionary:
         if len(to_target) == 0:
             return None
 
-        words = self.all_words.copy()
-        pruned = words.copy()
-        for word in words:
+        pruned = self.all_words.copy()
+        for word in self.all_words:
             has_a_target_letter = False
             for letter in to_target:
                 if letter in word:
@@ -263,16 +247,8 @@ class Dictionary:
         returns either an exclusive word, an intersecting word or an answer.
         """
         self._update()
-        log(f'Answers: {self.answers}, Exclusive: {len(self.exclusive_words)}')
-        guess = None
-        if len(self.answers) > 100 and len(self.exclusive_words) > 0:
-            log("EXCLUSIVE")
-            guess = self.exclusive_words[0]
-        elif len(self.answers) > 3:
-            guess = self.intersecting_word()
-
-        if guess is None:
-            guess = self.answers[0]
+        log(f'Answers: {self.answers}')
+        guess = self.answers[0]
 
         assert(guess is not None)
         return guess
@@ -297,10 +273,12 @@ class LetterFeedback:
     """
     def __init__(self):
         # These are for letters in known position
+        # Key is index, Value is letter
         self.green  = dict()
 
         # letters in the word but in the wrong position
-        self.yellow = set()
+        # Key is index, value is letter
+        self.yellow = dict()
 
         # letters not in the word
         self.gray   = set()
@@ -309,8 +287,6 @@ class LetterFeedback:
         self._used   = set()
 
         self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
-
-        self.open_spots = list(range(0,WORD_LENGTH))
 
     def green_by_spots(self):
         spots = dict()
@@ -321,19 +297,12 @@ class LetterFeedback:
                 spots[position] = letter
         return spots
 
-    def hit(self, letter, position):
+    def hit(self, letter, position, is_green):
         self.use(letter)
-        if position > -1:
-            if letter not in self.green:
-                self.green[letter] = []
-            if position not in self.green[letter]:
-                self.open_spots.remove(position)
-                self.green[letter].append(position)
-                if letter in self.yellow:
-                    self.yellow.remove(letter)
-        elif position == -1:
-            if letter not in self.yellow:
-                self.yellow.add(letter)
+        if is_green:
+            self.green[position] = letter
+        else:
+            self.yellow[position] = letter
 
     def miss(self, letter):
         self.gray.add(letter)
@@ -346,9 +315,7 @@ class LetterFeedback:
 
     def matching(self):
         matching = self.green.copy()
-        for letter in self.yellow:
-            matching[letter] = [-1]
-        return matching
+        return matching.update(self.yellow.copy())
 
     def used(self):
         return self._used
@@ -357,7 +324,7 @@ class LetterFeedback:
         return self._unused
 
     def __str__(self):
-        return f'Green: {list(self.green.keys())}, Yellow: {self.yellow}, Used: {self.used()}, Unused: {self.unused()}'
+        return f'Green: {self.green}, Yellow: {self.yellow}, Used: {self.used()}, Unused: {self.unused()}'
 
 class Puzzle:
     def __init__(self):
@@ -368,8 +335,8 @@ class Puzzle:
         self.guesses = list()
 
     # Only way to add a match from another class
-    def hit(self, letter, position):
-        self.feedback.hit(letter, position)
+    def hit(self, letter, position, is_green):
+        self.feedback.hit(letter, position, is_green)
 
     def miss(self, letter):
         self.feedback.miss(letter)
@@ -411,26 +378,17 @@ class Solver:
         self._is_solved = False
 
     def _process_guess(self, guess):
-        index = 0
-        for letter in guess:
-            # This gives us ALL the positions of a matching letter
-            results = [_.start() for _ in re.finditer(letter, self.target)]
-
-            # if the letter is a miss
-            if len(results) == 0:
-                self.puzzle.miss(letter)
-
-            # if the letter is a hit
+        for (index, letter) in enumerate(guess):
+            if letter in self.target:
+                # letter is in correct position (Green)
+                if self.target[index] == letter:
+                    self.puzzle.hit(letter, index, True)
+                # letter is not in the correct position (Yellow)
+                else:
+                    self.puzzle.hit(letter, index, False)
             else:
-                for position in results:
-                    # letter is in correct position
-                    if position == index:
-                        self.puzzle.hit(letter, position)
-                    # letter is not in the correct position
-                    else:
-                        self.puzzle.hit(letter, -1)
-
-            index += 1
+                self.puzzle.miss(letter)
+        log(self.puzzle.feedback)
 
     def solve(self, starting_word = "EARST"):
         guess = starting_word if starting_word else self.puzzle.next_guess()
@@ -462,11 +420,11 @@ class Solver:
         unused = set([letter for letter in word])
         for index, letter in enumerate(in_place):
             if letter != "_":
-                self.puzzle.hit(letter, index)
+                self.puzzle.hit(letter, index, True)
                 if letter in unused:
                     unused.remove(letter)
         for letter in out_of_place:
-            self.puzzle.hit(letter, -1)
+            self.puzzle.hit(letter, word.index(letter), False)
             unused.remove(letter)
         for letter in unused:
             self.puzzle.miss(letter)
