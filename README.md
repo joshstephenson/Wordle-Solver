@@ -1,9 +1,5 @@
 # Python Wordle Solver
-This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html). The goals of this project are:
-1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there is 1 word (`RIPER`) that requires 7 guesses.
-2. To achieve the lowest possible guess average which is currently 3.7434 guesses per puzzle, starting with `SLATE`.
-3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than other solvers that use backtracking to determine the minimum possible average (3.42).
-4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
+This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/index.html).
 
 ## What is Wordle?
 [Wordle](https://www.nytimes.com/games/wordle/index.html) is a five letter English word guessing game where the player must guess a target word in six guesses. For each attempt, the player enters a five letter word and receives feedback for each letter:
@@ -11,8 +7,17 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 - Correct letters in their correct positions will be marked green.
 - Letters that are not included in the target word will be marked gray.
 
-## Performance
-![results-SLATE-3 7434](https://user-images.githubusercontent.com/11002/183754823-f7910927-6d2c-4bc3-94dc-25d8833e62cf.png)
+![Screen Shot 2022-08-09 at 5 29 21 PM](https://user-images.githubusercontent.com/11002/183765171-4f49f73a-e4ea-42fc-ab17-91d8a9c1d77b.png)
+
+## Goals of this Project
+The goals of this project are:
+1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there is 1 word (`RIPER`) that requires 7 guesses.
+2. To achieve the lowest possible guess average which is currently 3.7434 guesses per puzzle, starting with `SLATE`.
+3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than other solvers that use backtracking to determine the minimum possible average (3.42).
+4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
+
+## Results
+![results-SLATE-3 7434](https://user-images.githubusercontent.com/11002/183779330-00bd9a43-fc4d-4e67-b2ec-39f036b5b28d.png)
 
 Out of 2315 Wordle puzzles, this algorithm solves all but one word in 6 guesses or fewer and 86.6% in 4 guesses or fewer. 
 
@@ -50,6 +55,7 @@ The algorithm will start by guessing `SLATE` and then `CRONY` which will yield a
 This will only leave 9 words in the answer list: `{BOUND, POUND, FOUND, DOING, MOUND, GOING, WOUND, HOUND, OWING}`.
 As you can see, most of these words have 4 of the same letters and most are in the same position, so if we were to continue with the algorithm as is, it would take 8 guesses to solve `HOUND`. That's why it makes more sense here to take the letters `{M, H, D, U, G, F, W, Z, J, Q}` (letters that are in the answer list but have not been matched as green or yellow yet) and find a word with as many of those letters as possible. In this case, the word `HUMID` does well, and after that the answer list is down to just one word: `HOUND`. With this improvement it only takes 4 guesses to solve it: `SLATE>CRONY>HUMID>HOUND`
 
+It's worth mentioning that this improvement brings down many words that take more than 4 guesses to solve, particularly 20 words that cannot be solved at all. However it doesn't do much to improve the AVG because it degrades performance for words under 4 guesses. This is a necessary sacrifice considering the highest goal is to solve all 2315 words in 6 guesses or fewer, which this code is still 1 one word shy of accomplishing.
 
 ## Usage
 The current version can be used in 2 different ways:
