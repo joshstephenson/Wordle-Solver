@@ -46,7 +46,7 @@ else:
             scores[solution.guess_count]['count'] += 1
             scores[solution.guess_count]['words'].append(solution.word)
 
-    sorted_scores = dict(sorted(scores.items(), key = lambda x: x[0]))
+    sorted_scores = dict(sorted(scores.items(), key = lambda x: x[0], reverse = True))
     names = list(sorted_scores.keys())
     values = list(map(lambda x: x['count'], sorted_scores.values()))
     words = list(map(lambda x: ', '.join(x[1]['words']) if x[0] > 6 else str(len(x[1]['words'])), sorted_scores.items()))
