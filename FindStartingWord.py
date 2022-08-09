@@ -14,7 +14,7 @@ def print_best(results):
 dictionary = Dictionary()
 
 results = dict()
-for starting_word in dictionary.all_words:
+for starting_word in dictionary.answers:
     avg = 0
     count = 0
     score = 0
