@@ -7,7 +7,6 @@ LOGGING = False
 GUESSING_DICTIONARY = "./nyt-guesses.txt"
 ANSWER_DICTIONARY = "./nyt-answers.txt"
 WORD_LENGTH = 5
-PENALTY_FOR_LETTER_REDUNDANCY = 0
 
 def log(string):
     logging = int(os.getenv('WORDLE_LOGGING')) == 1 if os.getenv('WORDLE_LOGGING') else False
@@ -57,9 +56,7 @@ class Dictionary:
         self.frequency = self._generate_letter_frequency(answers)
         self.letters_by_position = self._sort_letters()
 
-#        self.word_scores = self._word_scores(guesses + answers, False)
-#        self.all_words = self._sort_by_score(self._word_scores(answers))
-#        self.exclusive_words = self.all_words.copy()
+        self.guesses = self._sort_by_score(self._word_scores(guesses + answers, False))
         self.answers = self._sort_by_score(self._word_scores(answers))
 
         self.feedback = LetterFeedback()
@@ -156,13 +153,11 @@ class Dictionary:
         Call this after a guess is actually made. It will make sure guesses are removed from available answers and guess words.
         guess: the word to remove
         """
-        log("GUESS: " + guess)
+        log(f'GUESS: {guess}')
         if guess in self.answers:
             self.answers.remove(guess)
-#        if guess in self.all_words:
-#            self.all_words.remove(guess)
-#        if guess in self.exclusive_words:
-#            self.exclusive_words.remove(guess)
+        if guess in self.guesses:
+            self.guesses.remove(guess)
 
     def _update(self):
         # Looping over words is costly, don't do it if we don't need to
@@ -170,13 +165,11 @@ class Dictionary:
             return
         # always update answers first
         self._update_answers()
-        # and then guesses after
-#        self._update_exclusive_words()
 
     def _word_should_be_saved(self, word):
         """
         Used internally to decide whether or not a word should be removed from a given word list
-        based on LetterFeedback (greens, yellows, grays and used)
+        based on LetterFeedback (greens, yellows, grays and used).
         """
         # Don't save words that have YELLOW letters in yellow spots
         for position in self.feedback.yellow.keys():
@@ -194,46 +187,49 @@ class Dictionary:
 
         return True
 
+    def _word_should_be_saved_intersecting(self, word):
+        for letter in self.feedback.unmatched:
+            if letter in word:
+                return True
+        return False
+
     def _update_answers(self):
         self.answers = list(filter(self._word_should_be_saved, self.answers))
 
-#    def _update_exclusive_words(self):
-#        self.exclusive_words = list(filter(lambda word: self._word_should_be_saved(word, False), self.exclusive_words))
-
     def intersecting_word(self):
         """
-        This function needs optimization.
-        It finds a word that will cut through a small list of answers with many common letters
-        """
-        log(self.answers)
-        available_letters = set((letter for letter in ''.join(self.answers)))
+        Find a word that will cut through a small list of answers with many
+        common letters Assuming we are trying to find the word HOUND, and after
+        guessing SLATE and CRONY the possible answers are: Answers:
+            BOUND, POUND, FOUND, DOING, MOUND, GOING, WOUND, HOUND, OWING
+        Letters in those words:
+            O, U, F, N, I, D, B, M, W, G, P, H
+        After filtering out letters we have matched already, we are left with:
+            U, F, I, D, B, M, W, G, P, H
+        The word with the most of these letters is HUMID which narrows the
+        answer list down to only one word:
+            HOUND
+"""
+        available_letters = set(letter for letter in ''.join(self.answers))
         log(f'Letters in Answers: {available_letters}')
-        to_target = available_letters - set(self.feedback.matching().keys())
-        log(f'Target: {to_target}')
-        log(self.feedback)
-        count = len(available_letters)
-        if len(to_target) == 0:
+
+        self.feedback.update_unmatched_from(available_letters)
+        log(f'Target: {self.feedback.unmatched}')
+        if len(self.feedback.unmatched) == 0:
             return None
 
-        pruned = self.all_words.copy()
-        for word in self.all_words:
-            has_a_target_letter = False
-            for letter in to_target:
-                if letter in word:
-                    has_a_target_letter = True
-                    break
-            if not has_a_target_letter:
-                pruned.remove(word)
-
+        # filter out guess words of words that don't have any of the target letters
+        pruned = list(filter(self._word_should_be_saved_intersecting, self.guesses))
         if len(pruned) == 0:
             return None
-        best_word = pruned[0]
+
+        # Now find the one that has the MOST of these letters
+        best_word = None
         best_length = 0
         for word in pruned:
-            length = 0
-            for letter in to_target:
-                if letter in word:
-                    length += 1
+            letters = set(letter for letter in word)
+            common = self.feedback.unmatched.intersection(letters)
+            length = len(common)
             if length > best_length:
                 best_length = length
                 best_word = word
@@ -248,7 +244,11 @@ class Dictionary:
         """
         self._update()
         log(f'Answers: {self.answers}')
-        guess = self.answers[0]
+        guess = None
+        if len(self.answers) < 50 and len(self.answers) > 2:
+            guess = self.intersecting_word()
+        if guess is None:
+            guess = self.answers[0]
 
         assert(guess is not None)
         return guess
@@ -283,22 +283,26 @@ class LetterFeedback:
         # letters not in the word
         self.gray   = set()
 
+        # Letters that match in green or yellow
+        self.matched = set()
+
+        # Letters that need targeting
+        self.unmatched = set()
+
         # letters used in guesses
         self._used   = set()
 
         self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
 
-    def green_by_spots(self):
-        spots = dict()
-        if len(self.green) == 0:
-            return spots
-        for letter in self.green.keys():
-            for position in self.green[letter]:
-                spots[position] = letter
-        return spots
+    def update_unmatched_from(self, available):
+        if not isinstance(available, set):
+            raise "available must be a Set"
+        self.unmatched = available - self.matched
 
     def hit(self, letter, position, is_green):
         self.use(letter)
+        if letter not in self.matched:
+            self.matched.add(letter)
         if is_green:
             self.green[position] = letter
         else:
@@ -312,10 +316,6 @@ class LetterFeedback:
         self._used.add(letter)
         if letter in self._unused:
             self._unused.remove(letter)
-
-    def matching(self):
-        matching = self.green.copy()
-        return matching.update(self.yellow.copy())
 
     def used(self):
         return self._used
