@@ -11,22 +11,22 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 
 ## Goals of this Project
 The goals of this project are:
-1. To solve all 2315 answer words in 6 guesses or fewer. Currently, there is 1 word (`RIPER`) that requires 7 guesses.
+1. To solve all 2315 answer words in 6 guesses or fewer. Currently all words are solved in 6 words or less.
 2. To achieve the lowest possible guess average which is currently 3.7434 guesses per puzzle, starting with `SLATE`.
 3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than other solvers that use backtracking to determine the minimum possible average (3.42).
 4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
 
 ## Results
-![results-SLATE-3 7434](https://user-images.githubusercontent.com/11002/183779330-00bd9a43-fc4d-4e67-b2ec-39f036b5b28d.png)
+![results-EARST-3 7654](https://user-images.githubusercontent.com/11002/183791420-975c41ae-6646-46e2-9b71-59a579d8574a.png)
 
-Out of 2315 Wordle puzzles, this algorithm solves all but one word in 6 guesses or fewer and 86.6% in 4 guesses or fewer. 
+Out of 2315 Wordle puzzles, this algorithm solves all but one word in 6 guesses or fewer and 85.9% in 4 guesses or fewer. 
 
 ## Word lists
 There are two dictionaries NYTimes uses for Wordle:
 - [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt) includes 2315 words which are valid puzzle answers.
 - [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt) includes 10637 words which can only be used as guesses but will not be solutions to daily puzzles.
 
-## How it Works (the algorithm)
+## About the Algorithm
 The `answers` list is initially sorted by the popularity of letters in their respective positions. This is important for getting words with the highest word score.
 
 At the start and after each guess, the algorithm finds the next best guess using the following steps:
