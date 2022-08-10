@@ -61,7 +61,7 @@ First, by running [SolverTest.py](https://github.com/joshstephenson/Wordle-Solve
 
 Example:
 ```
-./SolverTest.py 
+$ ./wordle_runner.py 
 ```
 
 ```
@@ -90,27 +90,27 @@ For debugging purposes, you can enable logging with `export WORDLE_LOGGING=1; ./
 
 You can test a single word with the `-w WORD` option:
 ```
-./SolverTest.py -w alert
-Solved: ALERT in 3 guesses: 
-EARST, GULCH, ALERT
+$ ./wordle_runner.py -w alert
+Solved: ALERT in 4 guesses: 
+SLATE, CRAPE, ALTER, ALERT
 ```
 
 You can find the rank of a word in the overall word scores with the `-r WORD` option:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -r alert
+$ ./solver_test.py -r alert
 8/12953
 ```
 
 And finally, you can get the individual score of a word with the `-s WORD` option:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./SolverTest.py -s alert
+$ ./solver_test.py -s alert
 4554
 ```
 
 ## Interactive Solver
 This is the most useful thing you might want to use while you are actually solving the puzzle online. It will recommend the player's next guess, receive the player's chosen guess along with green and yellow letters:
 ```
-./WordleInteractive.py
+$ ./wordle_interactive.py
 ```
 
 Example:
