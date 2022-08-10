@@ -38,6 +38,7 @@ while not is_solved:
         yellow = None
     solver.guess(word, green, yellow)
     guess = solver.next_guess()
+    print(f'{solver.answer_count()} possible answers')
     print(f'Your next guess should be: {guess}')
     word = input(f'What is your next guess? (press ENTER for {guess})\n> ')
     if len(word) < 5:
