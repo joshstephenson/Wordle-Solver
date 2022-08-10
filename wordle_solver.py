@@ -56,7 +56,8 @@ class Dictionary:
         self.frequency = self._generate_letter_frequency(answers)
         self.letters_by_position = self._sort_letters()
 
-        self.guesses = self._sort_by_score(self._word_scores(guesses + answers, False))
+        self.word_scores = self._word_scores(guesses + answers, False)
+        self.guesses = self._sort_by_score(self.word_scores)
         self.answers = self._sort_by_score(self._word_scores(answers))
 
         self.feedback = LetterFeedback()
@@ -136,8 +137,8 @@ class Dictionary:
         Get the rank of a single word out of all words
         """
         word = word.upper()
-        count = len(self.all_words)
-        index = self.all_words.index(word)+1
+        count = len(self.guesses)
+        index = self.guesses.index(word)+1
         return f'{index}/{count}'
 
     def score_of(self, word):

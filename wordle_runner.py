@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from WordleSolver import Solver
-from WordleSolver import Dictionary
+from wordle_solver import Solver
+from wordle_solver import Dictionary
 import matplotlib.pyplot as plt
 import argparse
 
