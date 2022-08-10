@@ -172,8 +172,7 @@ class Dictionary:
         based on LetterFeedback (greens, yellows, grays and used).
         """
         # Don't save words that have YELLOW letters in yellow spots
-        for position in self.feedback.yellow.keys():
-            letter = self.feedback.yellow[position]
+        for position, letter in self.feedback.yellow.items():
             if letter not in word or word[position] == letter:
                 return False
         # Don't save words that have gray letters
@@ -181,8 +180,8 @@ class Dictionary:
             if letter in word:
                 return False
         # Save words that have GREEN letters in green spots
-        for position in self.feedback.green.keys():
-            if word[position] != self.feedback.green[position]:
+        for position, letter in self.feedback.green.items():
+            if word[position] != letter:
                 return False
 
         return True
@@ -324,7 +323,17 @@ class LetterFeedback:
         return self._unused
 
     def __str__(self):
-        return f'Green: {self.green}, Yellow: {self.yellow}, Used: {self.used()}, Unused: {self.unused()}'
+        gray = ''.join(sorted(self.gray))
+        unused = ''.join(sorted(self.unused()))
+        greens = ['*' for i in range(0,5)]
+        for key in self.green:
+            greens[key] = self.green[key]
+        greens = ''.join(greens)
+        yellows = ['*' for i in range(0,5)]
+        for key in self.yellow:
+            yellows[key] = self.yellow[key]
+        yellows = ''.join(yellows)
+        return f'--Green: {greens}, Yellow: {yellows}, Gray: {gray}, Unused: {unused}'
 
 class Puzzle:
     def __init__(self):
