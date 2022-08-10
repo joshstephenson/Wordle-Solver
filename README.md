@@ -10,16 +10,13 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 ![Screen Shot 2022-08-09 at 5 29 21 PM](https://user-images.githubusercontent.com/11002/183765171-4f49f73a-e4ea-42fc-ab17-91d8a9c1d77b.png)
 
 ## Goals of this Project
-The goals of this project are:
-1. To solve all 2315 answer words in 6 guesses or fewer. Currently all words are solved in 6 words or less.
-2. To achieve the lowest possible guess average which is currently 3.7434 guesses per puzzle, starting with `SLATE`.
-3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than other solvers that use backtracking to determine the minimum possible average (3.42).
-4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
-
-## Results
 ![results-EARST-3 7654](https://user-images.githubusercontent.com/11002/183791420-975c41ae-6646-46e2-9b71-59a579d8574a.png)
 
-Out of 2315 Wordle puzzles, this algorithm solves all but one word in 6 guesses or fewer and 85.9% in 4 guesses or fewer. 
+The goals of this project are:
+1. To solve all 2315 answer words in 6 guesses or fewer. Currently all words are solved in 6 words or fewer with 85.9% solved in 4 and under.
+2. To achieve the lowest possible guess average which is currently 3.7654 guesses per puzzle, starting with `EARST`.
+3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than other solvers that use backtracking to determine the minimum possible average (3.42).
+4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
 
 ## Word lists
 There are two dictionaries NYTimes uses for Wordle:
