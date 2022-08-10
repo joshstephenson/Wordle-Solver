@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from WordleSolver import Solver
+from wordle_solver import Solver
 
 WORD_LENGTH = 5
 def has_duplicate_letters(word):
