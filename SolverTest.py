@@ -20,7 +20,7 @@ elif args.word:
     print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
     print(', '.join(solution.guesses))
 else:
-    starting_word = "SLATE"
+    starting_word = "EARST"
     dictionary = (args.dictionary if args.dictionary else "nyt-answers.txt")
     count = 0
     scores = dict()
