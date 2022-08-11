@@ -187,17 +187,15 @@ class Dictionary:
 
     def _find_best_intersecting_word(self):
         """
-        Find a word that will cut through a small list of answers with many
-        common letters Assuming we are trying to find the word HOUND, and after
-        guessing SLATE and CRONY the possible answers are: Answers:
-            BOUND, POUND, FOUND, DOING, MOUND, GOING, WOUND, HOUND, OWING
-        Letters in those words:
-            O, U, F, N, I, D, B, M, W, G, P, H
-        After filtering out letters we have matched already, we are left with:
-            U, F, I, D, B, M, W, G, P, H
-        The word with the most of these letters is HUMID which narrows the
-        answer list down to only one word:
-            HOUND
+            Find a word that will cut through a small list of answers with many common letters. Assuming we are trying to find the word HOUND, and after guessing SLATE and CRONY the possible answers are:
+                BOUND, POUND, FOUND, DOING, MOUND, GOING, WOUND, HOUND, OWING
+            Letters in those words:
+                O, U, F, N, I, D, B, M, W, G, P, H
+            After filtering out letters we have matched already, we are left with:
+                U, F, I, D, B, M, W, G, P, H
+            This will sort all available guesses by their composition of these letters, favoring first those with the letters that occur the most times in the above answers and then will break ties using the word score of those scores.
+            The word with the most of these letters is HUMID which narrows the answer list down to only one word:
+                HOUND
 """
         letter_info = self._find_letter_frequency_in_answers()
         options = list(filter(lambda word: self._word_should_be_saved_intersecting(word, letter_info), self.guesses))
@@ -256,7 +254,7 @@ class Dictionary:
     def next_guess(self):
         """
         This function starts the pruning process and based on number of answers and exclusive_words remaining,
-        returns either an exclusive word, an intersecting word or an answer.
+        returns either an answer or an intersecting word
         """
         self._update()
         guess = None
