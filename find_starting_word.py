@@ -3,7 +3,7 @@ from wordle_solver import Solver
 from wordle_solver import Dictionary
 
 def sort_results(results):
-    return dict(sorted(results.items(), key = lambda item: item[1]))
+    return dict(sorted(results.items(), key = lambda item: item[1]['avg']))
 
 def print_best(results):
     results = sort_results(results)
