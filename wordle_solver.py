@@ -122,8 +122,8 @@ class Dictionary:
         word_dict = dict()
         count = 0
         for word in words:
-            word_dict[word] = self._get_word_score(word, by_position)
-            count += 1
+                word_dict[word] = self._get_word_score(word, by_position)
+                count += 1
 
         sorted_word_dict = sorted(word_dict.items(), key = lambda item: item[1], reverse = True)
         return sorted_word_dict
@@ -187,16 +187,22 @@ class Dictionary:
 
         return True
 
-    def _word_should_be_saved_intersecting(self, word):
-        for letter in self.feedback.unmatched:
+    def _word_should_be_saved_intersecting(self, word, letter_info):
+        for letter in letter_info.keys():
             if letter in word:
                 return True
         return False
 
-    def _update_answers(self):
-        self.answers = list(filter(self._word_should_be_saved, self.answers))
+    def _get_intersecting_score(self, word, info):
+        score = 0
+        letters_matched = list()
+        for letter in word:
+            if letter in info and letter not in letters_matched:
+                letters_matched.append(letter)
+                score += info[letter]
+        return score
 
-    def intersecting_word(self):
+    def _find_best_intersecting_word(self):
         """
         Find a word that will cut through a small list of answers with many
         common letters Assuming we are trying to find the word HOUND, and after
@@ -210,32 +216,59 @@ class Dictionary:
         answer list down to only one word:
             HOUND
 """
-        available_letters = set(letter for letter in ''.join(self.answers))
-        log(f'Letters in Answers: {available_letters}')
-
-        self.feedback.update_unmatched_from(available_letters)
-        log(f'Target: {self.feedback.unmatched}')
-        if len(self.feedback.unmatched) == 0:
+        letter_info = self._find_letter_frequency_in_answers()
+        options = list(filter(lambda word: self._word_should_be_saved_intersecting(word, letter_info), self.guesses))
+        if len(options) == 0:
             return None
 
-        # filter out guess words of words that don't have any of the target letters
-        pruned = list(filter(self._word_should_be_saved_intersecting, self.guesses))
-        if len(pruned) == 0:
-            return None
+        # Creating a list of tuples with (word, word score)
+        options = list(map(lambda word: (word, self._get_intersecting_score(word, letter_info)), options))
+        options = sorted(options, key = lambda word: word[1], reverse = True)
+        log(f'Options: {options[0:20]}')
 
-        # Now find the one that has the MOST of these letters
-        best_word = None
-        best_length = 0
-        for word in pruned:
-            letters = set(letter for letter in word)
-            common = self.feedback.unmatched.intersection(letters)
-            length = len(common)
-            if length > best_length:
-                best_length = length
-                best_word = word
+        # take the top scoring words:
+        max_score = max(list(map(lambda score: score[1], options)))
+        highest_scoring = list(filter(lambda score: score[1] == max_score, options))
+        log(f'Max Score: {highest_scoring}')
 
-        log(f'INTERSECTING: {best_word}')
-        return best_word
+        # Sort by word score here, since they are all equally with intersecting score
+        highest_scoring = sorted(highest_scoring, key = lambda ws: self._get_word_score(ws[0]), reverse = True)
+        word = highest_scoring[0][0]
+        log(f'Highest scoring intersecting: {word}')
+        return word
+
+    def _find_letter_frequency_in_answers(self):
+        """
+            Returns a dictionary of the letters in answers along with a score
+            for their unique frequency in each word (meaning only 1 point per word)
+        """
+        letters_guessed = self.feedback.matched
+        # Remove duplicate letters from available answers
+        # FUZZY => FUZY or because sets don't preserve order
+        # FUZZY => YFZU
+        words = list(map(lambda word: ''.join(list(set(letter for letter in word))), self.answers))
+
+        letters_in_word = set(letter for letter in ''.join(words))
+
+        # Remove letters already guessed
+        letters_targeted = letters_in_word - letters_guessed
+
+        # Then create a dict of letters and their frequency (after making letters distinct)
+        # A letter gets +1 for each word it is in
+        letter_info = dict(map(lambda letter: (letter, ''.join(words).count(letter)), letters_targeted))
+
+        # Sort them by their frequency
+        log(f'Remaining Answers: {self.answers}')
+        letter_info = dict(sorted(letter_info.items(), key = lambda item: item[1], reverse = True))
+        log(f'Letters: {letter_info}')
+
+        return letter_info
+
+    def intersecting_word(self):
+        return self._find_best_intersecting_word()
+
+    def _update_answers(self):
+        self.answers = list(filter(self._word_should_be_saved, self.answers))
 
     def next_guess(self):
         """
@@ -243,7 +276,6 @@ class Dictionary:
         returns either an exclusive word, an intersecting word or an answer.
         """
         self._update()
-        log(f'Answers: {self.answers}')
         guess = None
         if len(self.answers) < 50 and len(self.answers) > 2:
             guess = self.intersecting_word()
@@ -443,6 +475,7 @@ class Solver:
             self.puzzle.miss(letter)
 
     def answer_count(self):
+        print(f'Remaining Answers: {self.puzzle.dictionary.answers}')
         return self.puzzle.dictionary.answer_count()
 
     def next_guess(self):
