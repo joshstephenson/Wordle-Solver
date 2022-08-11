@@ -16,7 +16,7 @@ if args.rank:
 elif args.score:
     print(Dictionary().score_of(args.score))
 elif args.word:
-    solution = Solver(args.word.strip().upper()).solve()
+    solution = Solver(args.word.strip().upper()).solve('SLATE')
     print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
     print(', '.join(solution.guesses))
 else:
