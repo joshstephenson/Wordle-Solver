@@ -18,14 +18,19 @@ for starting_word in dictionary.answers:
     avg = 0
     count = 0
     score = 0
+    results[starting_word] = dict()
     for answer in dictionary.answers:
         solution = Solver(answer).solve(starting_word)
         count += 1
         score += solution.guess_count
+        result = results[starting_word]
+        if solution.guess_count not in result.keys():
+            result[solution.guess_count] = 0
+        result[solution.guess_count] += 1
 
     avg = score / count
     print(f'{starting_word} avg: {avg}')
-    results[starting_word] = avg
+    results[starting_word]['avg'] = avg
     print_best(results)
 
 print(results)
