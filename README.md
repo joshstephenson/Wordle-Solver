@@ -10,16 +10,16 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 ![Screen Shot 2022-08-09 at 5 29 21 PM](https://user-images.githubusercontent.com/11002/183765171-4f49f73a-e4ea-42fc-ab17-91d8a9c1d77b.png)
 
 ## Goals of this Project
-![results-EARST-3 7654](https://user-images.githubusercontent.com/11002/183791420-975c41ae-6646-46e2-9b71-59a579d8574a.png)
+![results-SALET-3 6799](https://user-images.githubusercontent.com/11002/184224693-66cdd934-7681-47f7-8cf5-35d49ec7f41a.png)
 
 The goals of this project are:
-1. To solve all 2315 answer words in 6 guesses or fewer. Currently all words are solved in 6 words or fewer with 85.9% solved in 4 and under.
-2. To achieve the lowest possible guess average which is currently 3.7654 guesses per puzzle, starting with `EARST`.
-3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than other solvers that use backtracking to determine the minimum possible average (3.42).
+1. To solve all 2315 answer words in 6 guesses or fewer. Currently all words are solved in 6 words or fewer with 89.8% solved in 4 and under. Using the starting word `SALET`, only 6 words require 6 guesses, but the overall average is 3.6799. Using `SLATE` as the starting word, there are 12 words that require 6 guesses but the overall average drops to 3.676.
+2. To achieve the lowest possible guess average which is currently 3.676 guesses per puzzle, starting with `SLATE`.
+3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than decesion-tree based solvers that use backtracking to determine the minimum possible average (3.42).
 4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
 
 ## Word lists
-There are two dictionaries NYTimes uses for Wordle:
+There are two dictionaries used by the game:
 - [nyt-answers.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-answers.txt) includes 2315 words which are valid puzzle answers.
 - [nyt-guesses.txt](https://github.com/joshstephenson/Wordle-Solver/blob/main/nyt-guesses.txt) includes 10637 words which can only be used as guesses but will not be solutions to daily puzzles.
 
@@ -52,7 +52,7 @@ The algorithm will start by guessing `SLATE` and then `CRONY` which will yield a
 This will only leave 9 words in the answer list: `{BOUND, POUND, FOUND, DOING, MOUND, GOING, WOUND, HOUND, OWING}`.
 As you can see, most of these words have 4 of the same letters and most are in the same position, so if we were to continue with the algorithm as is, it would take 8 guesses to solve `HOUND`. That's why it makes more sense here to take the letters `{M, H, D, U, G, F, W, Z, J, Q}` (letters that are in the answer list but have not been matched as green or yellow yet) and find a word with as many of those letters as possible. In this case, the word `HUMID` does well, and after that the answer list is down to just one word: `HOUND`. With this improvement it only takes 4 guesses to solve it: `SLATE>CRONY>HUMID>HOUND`
 
-It's worth mentioning that this improvement brings down many words that take more than 4 guesses to solve, particularly 20 words that cannot be solved at all. However it doesn't do much to improve the AVG because it degrades performance for words under 4 guesses. This is a necessary sacrifice considering the highest goal is to solve all 2315 words in 6 guesses or fewer, which this code is still 1 one word shy of accomplishing.
+It's worth mentioning that this improvement brings down many words that take more than 4 guesses to solve, particularly 20 words that could not be solved at all in 6 guesses. However there are many words for which it degrades performance by adding an extra step, when an otherwise lucky guess would do better.
 
 ## Usage
 The current version can be used in 2 different ways:
