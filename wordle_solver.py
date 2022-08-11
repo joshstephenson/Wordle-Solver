@@ -261,6 +261,9 @@ class Dictionary:
         self._update()
         return len(self.answers) == 0 and self.answers[0] == guess
 
+    def answer_count(self):
+        return len(self.answers)
+
     def __str__(self):
         return f'Dictionary\n{list(map(lambda x: x, words.frequency.values()))}'
 
@@ -439,6 +442,8 @@ class Solver:
         for letter in unused:
             self.puzzle.miss(letter)
 
+    def answer_count(self):
+        return self.puzzle.dictionary.answer_count()
 
     def next_guess(self):
         guess = self.puzzle.next_guess()
