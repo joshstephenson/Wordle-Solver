@@ -2,6 +2,7 @@
 *.pyc
 results-*.*
 RegexTest.py
-Test.py
+test.py
 problem-words.txt
 .DS_Store
+sort_test.py
