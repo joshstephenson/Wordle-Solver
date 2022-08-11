@@ -132,23 +132,6 @@ class Dictionary:
         sorted_word_arr = list(map(lambda x: x[0], scores))
         return sorted_word_arr
 
-    def rank_of(self, word):
-        """
-        Get the rank of a single word out of all words
-        """
-        word = word.upper()
-        count = len(self.guesses)
-        index = self.guesses.index(word)+1
-        return f'{index}/{count}'
-
-    def score_of(self, word):
-        """
-        Get the score for a single word: x/(total word count)
-        """
-        word = word.upper()
-        found = filter(lambda x: x[1] if x[0] == word else None, self.word_scores)
-        return list(found)[0][1]
-
     def register_guess(self, guess):
         """
         Call this after a guess is actually made. It will make sure guesses are removed from available answers and guess words.
@@ -295,6 +278,23 @@ class Dictionary:
 
     def answer_count(self):
         return len(self.answers)
+
+    def rank_of(self, word):
+        """
+        Get the rank of a single word out of all words
+        """
+        word = word.upper()
+        count = len(self.guesses)
+        index = self.guesses.index(word)+1
+        return f'{index}/{count}'
+
+    def score_of(self, word):
+        """
+        Get the score for a single word: x/(total word count)
+        """
+        word = word.upper()
+        found = filter(lambda x: x[1] if x[0] == word else None, self.word_scores)
+        return list(found)[0][1]
 
     def __str__(self):
         return f'Dictionary\n{list(map(lambda x: x, words.frequency.values()))}'
