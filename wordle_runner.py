@@ -61,5 +61,5 @@ else:
         f.write(f'{str(name)}: {words[index]}\n')
     f.close()
 
-    plt.barh(range(len(sorted_scores)), values, tick_label=names, color=(228.0/256.0, 88.0/256.0, 151.0/256.0, 1.0))
+    plt.barh(range(len(sorted_scores)), values, tick_label=names, color=(96.0/255.0, 160.0/255.0, 94.0/255.0, 1.0))
     plt.savefig(f'{filename}.png')
