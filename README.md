@@ -54,7 +54,7 @@ As you can see, most of these words have 4 of the same letters and most are in t
 
 It's worth mentioning that this improvement brings down many words that take more than 4 guesses to solve, particularly 20 words that could not be solved at all in 6 guesses. However there are many words for which it degrades performance by adding an extra step, when an otherwise lucky guess would do better.
 
-Take `LABEL` as an example. After a starting guess of `SLATE`, the remaining answers will be pruned to only 31. The highest scoring of these (based on letter frequency) is `BALER`, which after guessing would only leave 1 word: `LABEL`. Using the intersecting guess after `SLATE`, the guesses will be: `GRIND` and `CHUMP` before landing on `LABEL`.
+Take `LABEL` as an example. After a starting guess of `SLATE`, the remaining answers will be pruned to only 31. The highest scoring of these (based on letter frequency) is `BALER`, which after guessing would only leave 1 word: `LABEL`. Using the intersecting guess after `SLATE`, the guesses will be: `GRIND` and `CHUMP` before landing on `LABEL`. So, the intersecting guesses increase the number of steps from 3 to 4.
 
 ## Usage
 The current version can be used in 2 different ways:
@@ -67,24 +67,23 @@ $ ./wordle_runner.py
 ```
 
 ```
-3.7428 HYDRO(3): SLATE, CRONY, HYDRO
-3.7429 VIVID(4): SLATE, CRONY, HUMID, VIVID
-3.7426 LUPUS(3): SLATE, COYPU, LUPUS
-3.7427 LYMPH(4): SLATE, CURLY, HOING, LYMPH
-3.7428 ABYSS(4): SLATE, CORNI, BOGEY, ABYSS
-3.7429 HUMUS(4): SLATE, CORNI, DUMPY, HUMUS
-3.7435 JUMBO(5): SLATE, CRONY, HUMID, GUMBO, JUMBO
-3.7436 ETHIC(4): SLATE, TRIED, BENCH, ETHIC
-3.7437 UNZIP(4): SLATE, CRONY, GUIMP, UNZIP
-3.7438 UMBRA(4): SLATE, FAIRY, BUNCO, UMBRA
-3.7439 MIMIC(4): SLATE, CRONY, BUMPH, MIMIC
-3.7436 AFFIX(3): SLATE, FAIRY, AFFIX
-3.7433 ETHOS(3): SLATE, CORNI, ETHOS
-3.7434 INBOX(4): SLATE, CRONY, GUIDE, INBOX
-3.7431 NYMPH(3): SLATE, CRONY, NYMPH
-3.7432 ENNUI(4): SLATE, BONEY, MUCID, ENNUI
-3.7437 IGLOO(5): SLATE, CURLY, POIND, LIMBO, IGLOO
-3.7434 IDYLL(3): SLATE, CURLY, IDYLL
+2.8846 SHINY(2): SALET, SHINY
+2.8519 CRONE(2): SALET, CRONE
+2.8929 BRINE(4): SALET, CRONE, PUBIS, BRINE
+2.931  SHADE(4): SALET, CHIRP, MOVED, SHADE
+2.9333 SPACE(3): SALET, CHIRP, SPACE
+2.9355 SPARE(3): SALET, CHIRP, SPARE
+2.9688 SHAME(4): SALET, CHIRP, MOVED, SHAME
+2.9394 SLANT(2): SALET, SLANT
+2.9412 SCALE(3): SALET, CHAVE, SCALE
+2.9429 SPINE(3): SALET, PROIN, SPINE
+2.9444 TRACE(3): SALET, CHORD, TRACE
+2.973  SHAKE(4): SALET, CHIRP, MOVED, SHAKE
+2.9737 STONE(3): SALET, PROIN, STONE
+2.9744 SHAPE(3): SALET, CHIRP, SHAPE
+2.975  SCARE(3): SALET, CHIRP, SCARE
+3.0    SHAVE(4): SALET, CHIRP, MOVED, SHAVE
+2.9762 SALTY(2): SALET, SALTY
 ...
 ```
 
@@ -99,13 +98,13 @@ SLATE, CRAPE, ALTER, ALERT
 
 You can find the rank of a word in the overall word scores with the `-r WORD` option:
 ```
-$ ./solver_test.py -r alert
+$ ./wordle_runner.py -r alert
 8/12953
 ```
 
 And finally, you can get the individual score of a word with the `-s WORD` option:
 ```
-$ ./solver_test.py -s alert
+$ ./wordle_runner.py -s alert
 4554
 ```
 
@@ -117,28 +116,27 @@ $ ./wordle_interactive.py
 
 Example:
 ```
-joshuastephenson@~/Projects/Wordle-Solver$ ./WordleInteractive.py 
-What is your first word guess? (press ENTER for EARST) 
-> 
-You entered: EARST
+$ ./wordle_interactive.py 
+What is your first word guess? (press ENTER for SLATE) 
+> slate 
+You entered: SLATE
 Please enter green letters (press ENTER for none)
 > t
 Please enter yellow letters (press ENTER for none)
-> ear
-Your next guess should be: GULCH
-What is your next guess? (press ENTER for GULCH)
-> 
-You entered: GULCH
+> a
+15 possible answers
+Your next guess should be: PRICY
+What is your next guess? (press ENTER for PRICY)
+> pricy
+You entered: PRICY
 Please enter green letters (press ENTER for none)
-> 
+> py
 Please enter yellow letters (press ENTER for none)
-> l
-Your next guess should be: ALERT
-What is your next guess? (press ENTER for ALERT)
 > 
-You entered: ALERT
-Please enter green letters (press ENTER for none)
-> alert
+1 possible answers
+Your next guess should be: PATTY
+What is your next guess? (press ENTER for PATTY)
+> patty
 You won 😉 in 3 guesses!
 ```
 
