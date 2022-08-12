@@ -227,7 +227,7 @@ class Dictionary:
             Returns a dictionary of the letters in answers along with a score
             for their unique frequency in each word (meaning only 1 point per word)
         """
-        letters_guessed = self.feedback.matched
+        letters_guessed = self.feedback.used()
         # Remove duplicate letters from available answers
         # FUZZY => FUZY or because sets don't preserve order
         # FUZZY => YFZU
@@ -320,26 +320,13 @@ class LetterFeedback:
         # letters not in the word
         self.gray   = set()
 
-        # Letters that match in green or yellow
-        self.matched = set()
-
-        # Letters that need targeting
-        self.unmatched = set()
-
         # letters used in guesses
         self._used   = set()
 
         self._unused = set([letter for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"])
 
-    def update_unmatched_from(self, available):
-        if not isinstance(available, set):
-            raise "available must be a Set"
-        self.unmatched = available - self.matched
-
     def hit(self, letter, position, is_green):
         self.use(letter)
-        if letter not in self.matched:
-            self.matched.add(letter)
         if is_green:
             self.green[position] = letter
         else:
@@ -437,7 +424,7 @@ class Solver:
                 self.puzzle.miss(letter)
         log(self.puzzle.feedback)
 
-    def solve(self, starting_word = "EARST"):
+    def solve(self, starting_word = "SALET"):
         guess = starting_word if starting_word else self.puzzle.next_guess()
         while not self._is_solved:
             # Keep track of words and letters guessed
@@ -451,7 +438,9 @@ class Solver:
 
         return Solution(self.puzzle.guesses)
 
+    ######################################################
     # The following methods are for the interactive solver
+    ######################################################
     def hit(self, letter, position = -1):
         self.puzzle.hit(letter.upper(), position-1)
 
