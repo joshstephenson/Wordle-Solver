@@ -239,7 +239,6 @@ class Dictionary:
         letter_info = dict(map(lambda letter: (letter, ''.join(words).count(letter)), letters_targeted))
 
         # Sort them by their frequency
-        log(f'Remaining Answers: {self.answers}')
         letter_info = dict(sorted(letter_info.items(), key = lambda item: item[1], reverse = True))
         log(f'Letters: {letter_info}')
 
@@ -257,6 +256,7 @@ class Dictionary:
         returns either an answer or an intersecting word
         """
         self._update()
+        log(f'Remaining Answers ({len(self.answers)}): {self.answers}')
         guess = None
         if len(self.answers) < 50 and len(self.answers) > 2:
             guess = self.intersecting_word()
