@@ -7,9 +7,9 @@ def has_duplicate_letters(word):
     return len(letters) < WORD_LENGTH
 
 solver = Solver()
-word = input('What is your first word guess? (press ENTER for EARST) \n> ')
+word = input('What is your first word guess? (press ENTER for SLATE) \n> ')
 if len(word) < 5:
-    word = "EARST"
+    word = "SLATE"
 is_solved = False
 while not is_solved:
     word = word.strip().upper()
