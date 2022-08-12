@@ -85,7 +85,10 @@ class Dictionary:
         return frequency
 
     def _sort_letters(self):
-        """ Sorts letters by their frequency returning a dictionary with letters as the key """
+        """
+        Sorts letters by their frequency returning a dictionary with positional indices as the keys
+        Values are arrays of PositionLetters which have the letter, index and word letter score
+        """
         letters_by_position = dict()
         for i in range(0,WORD_LENGTH):
             letters_by_position[i] = []
@@ -96,7 +99,8 @@ class Dictionary:
         return letters_by_position
 
     def _get_word_score(self, word, by_position = True):
-        """ Returns score for word
+        """
+        Returns score for word
         by_position: if true, then score will be based on letter position
         """
         scores = dict()
@@ -115,7 +119,7 @@ class Dictionary:
 
     def _word_scores(self, words, by_position = True):
         """
-        Returns a dictionary of words with word as key and score as value
+        Returns a sorted dictionary of words with word as key and score as value
         words: list of words
         by_position: if True then scores will be based on letter position
         """
@@ -137,7 +141,7 @@ class Dictionary:
         Call this after a guess is actually made. It will make sure guesses are removed from available answers and guess words.
         guess: the word to remove
         """
-        log(f'GUESS: {guess}')
+        log(f'GUESSING: {guess}')
         if guess in self.answers:
             self.answers.remove(guess)
         if guess in self.guesses:
@@ -473,7 +477,6 @@ class Solver:
             self.puzzle.miss(letter)
 
     def answer_count(self):
-        print(f'Remaining Answers: {self.puzzle.dictionary.answers}')
         return self.puzzle.dictionary.answer_count()
 
     def next_guess(self):
