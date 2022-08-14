@@ -171,4 +171,4 @@ With these frequencies, we can calculate a score for each word based on the lett
 ```
 
 ## Contributions
-If you use this or would like to contribute, feel free to fork, contact me or submit a PR. Please note: I am not interested in solutions that precompute the best path for every word and cache them. I don't find solutions of that kind very compelling.
+If you use this or would like to contribute, feel free to fork, contact me or submit a PR.
