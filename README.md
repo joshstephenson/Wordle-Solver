@@ -7,15 +7,15 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 - Correct letters in their correct positions will be marked green.
 - Letters that are not included in the target word will be marked gray.
 
-![Screen Shot 2022-08-09 at 5 29 21 PM](https://user-images.githubusercontent.com/11002/183765171-4f49f73a-e4ea-42fc-ab17-91d8a9c1d77b.png)
+![KHAKI](https://user-images.githubusercontent.com/11002/184548002-2f5cc825-9ec6-47df-a703-7490a4eb593a.png)
 
 ## Goals of this Project
 ![results-SALET-3 6799](https://user-images.githubusercontent.com/11002/184381397-7d878a7b-430d-4662-9387-0689ce5f104a.png)
 
 The goals of this project are:
-1. To solve all 2315 answer words in 6 guesses or fewer. Currently all words are solved in 6 words or fewer with 89.8% solved in 4 and under. Using the starting word `SALET`, only 6 words require 6 guesses, but the overall average is 3.6799. Using `SLATE` as the starting word, there are 12 words that require 6 guesses but the overall average drops to 3.676.
+1. To solve all 2315 answer words in 6 guesses or fewer without backtracking. Currently all words are solved in 6 words or fewer with 89.8% solved in 4 and under. Using the starting word `SALET`, only 6 words require 6 guesses, but the overall average is 3.6799. Using `SLATE` as the starting word, there are 12 words that require 6 guesses but the overall average drops to 3.676.
 2. To achieve the lowest possible guess average which is currently 3.676 guesses per puzzle, starting with `SLATE`.
-3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than decesion-tree based solvers that use backtracking to determine the minimum possible average (3.42).
+3. To implement an algorithm that is not dependent on a given wordset. While this repository is tested on a static wordset, the algorithm should perform equally well if new words are added or removed. This is different than a shortest path based solution [like this other one I wrote](https://github.com/joshstephenson/Wordle-Solver-Rust), which runs through a tree of decisions from the root word to every leaf and then selects the shortest path.
 4. To provide [an interactive command line tool](#interactive-solver) that helps select the next best guess based on whatever previous guesses have been submitted.
 
 ## Word lists
@@ -28,9 +28,9 @@ The `answers` list is initially sorted by the popularity of letters in their res
 
 At the start and after each guess, the algorithm finds the next best guess using the following steps:
 
-1. If the count of available answers (starting at 2315) is above 50, then it simply returns the highest scoring answer.
-2. After comparing each guess against the target word, it will tally the green, yellow and gray letters. This will be used to prune the remaining answers. See below for more information.
-3. As soon as the answers are pruned down to fewer than 2 or less, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
+1. After each guess, the guessed word will be compared against the target word, tallying the green, yellow and gray letters. This will be used to prune the remaining answers. [See here](https://github.com/joshstephenson/Wordle-Solver/edit/main/README.md#how-words-are-pruned-based-on-green-yellow-and-gray-letters)
+2. If the count of available answers (starting at 2315) is above 50, then it simply returns the highest scoring answer from the pruned answer list. If the count of available answers is below 50, then an intersecting guess is made. This is a guess that attempts to partition the remaining answers in the greatest way possible. [See here](https://github.com/joshstephenson/Wordle-Solver/edit/main/README.md#how-intersecting-guesses-are-made)
+3. As soon as the answers are pruned down to fewer than 2 or fewer, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
 ### How words are pruned based on green, yellow and gray letters
 After each guess, the answer list is pruned so that:
@@ -41,7 +41,8 @@ After each guess, the answer list is pruned so that:
 NOTE: Initial implementations missed one important improvement: Yellow letters are not letters in any position, they are letters in only 4 possible positions. Therefore the second bullet above was updated to:
 * Words (without yellow letters) OR (with yellow letters in the same position they have already been tried) are removed.
 
-Once the answers are pruned to fewer than 50 words, but greater than 2 (usually after one or two guesses), the algorithm will try to make a blended match I call an _intersecting match_. To do this, it will look at the set (no duplicates) of letters in the answer list and subtract the set of letters that have already been matched in guesses. From this target set, it will find a word (using a combination of `guesses` and `answers`) with letters that can reduce the available answers the most. Note that it may select a word with previously used letters in order to capture the highest number of target letters. This helps prune answers when they have many common letters. For more info see the function `_find_best_intersecting_word()` in [wordle_solver.py](https://github.com/joshstephenson/Wordle-Solver/blob/main/wordle_solver.py).
+### How intersecting guesses are made
+Once the answers are pruned to fewer than 50 words, but greater than 2 (usually after one or two guesses), the algorithm will try to make a blended match I call an _intersecting guess_. These guesses are not attempts to identify the word directly, but to partition the remaining words maximally. To do this, it will look at the set of distinct letters in the answer list and subtract the set of letters that have already been matched in guesses. From this target set, it will find a word (using a combination of `guesses` and `answers`) with letters that can reduce the available answers the most. Note that it may select a word with previously used letters in order to capture the highest number of target letters. This helps prune answers when they have many common letters. For more info see the function `_find_best_intersecting_word()` in [wordle_solver.py](https://github.com/joshstephenson/Wordle-Solver/blob/main/wordle_solver.py).
 
 #### Example:
 Let's look at the target word `HOUND`. The algorithm will start by guessing `SLATE` and then `CRONY` which will yield a green match on `N` in the 4th position and a yellow match on `O`. Once we filter out all the words that:
@@ -52,9 +53,13 @@ Let's look at the target word `HOUND`. The algorithm will start by guessing `SLA
 This will only leave 9 words in the answer list: `{BOUND, POUND, FOUND, DOING, MOUND, GOING, WOUND, HOUND, OWING}`.
 As you can see, most of these words have 4 of the same letters and most are in the same position, so if we were to continue with the algorithm as is, it would take 8 guesses to solve `HOUND`. That's why it makes more sense here to take the letters `{M, H, D, U, G, F, W, Z, J, Q}` (letters that are in the answer list but have not been matched as green or yellow yet) and find a word with as many of those letters as possible. In this case, the word `HUMID` does well, and after that the answer list is down to just one word: `HOUND`. With this improvement it only takes 4 guesses to solve it: `SLATE>CRONY>HUMID>HOUND`
 
-It's worth mentioning that this improvement brings down many words that take more than 4 guesses to solve, particularly 20 words that could not be solved at all in 6 guesses. However there are many words for which it degrades performance by adding an extra step, when an otherwise lucky guess would do better.
+It's worth mentioning that this improvement brings down many words that take more than 4 guesses to solve, particularly 20 words that could not be solved at all in 6 guesses. However there are many words for which it degrades performance by adding an extra step, when an otherwise lucky guess would do better. This is an acceptable compromise for our main goal which is to bring down the upper end of the distribution.
 
 Take `LABEL` as an example. After a starting guess of `SLATE`, the remaining answers will be pruned to only 31. The highest scoring of these (based on letter frequency) is `BALER`, which after guessing would only leave 1 word: `LABEL`. Using the intersecting guess after `SLATE`, the guesses will be: `GRIND` and `CHUMP` before landing on `LABEL`. So, the intersecting guesses increase the number of steps from 3 to 4.
+
+## Related Projects
+Please check out this other project, written in Rust, that determines the lower bound for all answer words using a binary queue to walk down all possible paths.
+* [Wordle Solver in Rust](https://github.com/joshstephenson/Wordle-Solver-Rust)
 
 ## Usage
 The current version can be used in 2 different ways:
