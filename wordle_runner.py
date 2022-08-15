@@ -46,7 +46,7 @@ else:
             scores[solution.guess_count]['count'] += 1
             scores[solution.guess_count]['words'].append(solution.word)
 
-    sorted_scores = dict(sorted(scores.items(), key = lambda x: x[0], reverse = True))
+    sorted_scores = dict(sorted(scores.items(), key = lambda x: x[0]))
     names = list(sorted_scores.keys())
     values = list(map(lambda x: x['count'], sorted_scores.values()))
     words = list(map(lambda x: ', '.join(x[1]['words']) if x[0] > 6 else str(len(x[1]['words'])), sorted_scores.items()))
@@ -63,7 +63,7 @@ else:
 
     # Draw a "histogram", actually just a bar chart in this case
     fig, ax = plt.subplots(1,1)
-    plt.bar(range(len(sorted_scores)), list(reversed(values)), tick_label=list(reversed(names)), color=(96.0/255.0, 160.0/255.0, 94.0/255.0, 1.0))
+    plt.bar(range(len(sorted_scores)), values, tick_label=names, color=(96.0/255.0, 160.0/255.0, 94.0/255.0, 1.0))
     ax.set_xlabel('Guesses per answer')
     ax.set_ylabel('Words solved')
 
