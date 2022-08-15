@@ -54,12 +54,31 @@ else:
         print(str(name) + ": " + words[index])
     print(f'Total Words: {count}, Total Guesses: {guess_count}')
 
-
+    # Write the results to a txt file
     filename = f'results-{starting_word}-{avg}'
     f = open(f'{filename}.txt', "w")
     for index, name in enumerate(names):
         f.write(f'{str(name)}: {words[index]}\n')
     f.close()
 
-    plt.barh(range(len(sorted_scores)), values, tick_label=names, color=(96.0/255.0, 160.0/255.0, 94.0/255.0, 1.0))
+    # Draw a "histogram", actually just a bar chart in this case
+    fig, ax = plt.subplots(1,1)
+    plt.bar(range(len(sorted_scores)), list(reversed(values)), tick_label=list(reversed(names)), color=(96.0/255.0, 160.0/255.0, 94.0/255.0, 1.0))
+    ax.set_xlabel('Guesses per answer')
+    ax.set_ylabel('Words solved')
+
+    # Get rid of the border and tick marks which look cheap
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+#ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+#    ax.get_xaxis().set_ticks([])
+    ax.get_yaxis().set_ticks([])
+
+    rects = ax.patches
+    for rect, label in zip(rects, values):
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width() / 2, height+0.01, label,
+                ha='center', va='bottom')
+
     plt.savefig(f'{filename}.png')
