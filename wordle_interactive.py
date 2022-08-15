@@ -46,4 +46,4 @@ while not is_solved:
     is_solved = solver.is_solved()
 
 if is_solved:
-    print(f'You won 😉 in {len(solver.guesses())} guesses!')
+    print(f'You won in {len(solver.guesses())} guesses! 🎉')
