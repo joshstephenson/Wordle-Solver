@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from wordle_solver import Solver
 from wordle_solver import Dictionary
+import pandas as pd
+import numpy as np
 
 def sort_results(results):
     return dict(sorted(results.items(), key = lambda item: item[1]['avg']))
@@ -13,26 +15,52 @@ def print_best(results):
 
 dictionary = Dictionary()
 
-results = dict()
-for starting_word in dictionary.answers:
-    avg = 0
-    count = 0
-    score = 0
-    results[starting_word] = dict()
+words = []
+avg = []
+best = []
+best_word = []
+worst = []
+worst_word = []
+total_answer_count = len(dictionary.answers)
+for index, starting_word in enumerate(dictionary.guesses):
+    after_guess_count = 0
+    starting_count = 0
+    words.append(starting_word)
+
+    this_avg = 0
+    this_best = total_answer_count
+    this_best_word = None
+    this_worst = 0
+    this_worst_word = None
     for answer in dictionary.answers:
-        solution = Solver(answer).solve(starting_word)
-        count += 1
-        score += solution.guess_count
-        result = results[starting_word]
-        if solution.guess_count not in result.keys():
-            result[solution.guess_count] = 0
-        result[solution.guess_count] += 1
+        if starting_word == answer:
+            continue
+        # Guess the word
+        solver = Solver(answer)
+        solver.puzzle.add_guess(starting_word)
+        solver._process_guess(starting_word)
+        _ = solver.puzzle.next_guess()
 
-    avg = score / count
-    print(f'{starting_word} avg: {avg}')
-    results[starting_word]['avg'] = avg
-    print_best(results)
+        starting_count += total_answer_count # should be 2315
+        after_guess_count += solver.answer_count()
+        partition_amount = solver.answer_count() / total_answer_count
 
-print(results)
+        this_avg = after_guess_count / starting_count
 
-print_best(results)
+        if partition_amount < this_best:
+            this_best = partition_amount
+            this_best_word = answer
+        if partition_amount > this_worst:
+            this_worst = partition_amount
+            this_worst_word = answer
+
+#        print(f'{starting_word},{answer},{solver.answer_count()},{solver.answer_count() / total_answer_count}')
+
+    avg.append(this_avg)
+    best.append(this_best)
+    best_word.append(this_best_word)
+    worst.append(this_worst)
+    worst_word.append(this_worst_word)
+    print(f'{starting_word},{this_avg},{this_best},{this_best_word},{this_worst},{this_worst_word}')
+
+
