@@ -29,7 +29,7 @@ The `answers` list is initially sorted by the popularity of letters in their res
 At the start and after each guess, the algorithm finds the next best guess using the following steps:
 
 1. After each guess, the guessed word will be compared against the target word, tallying the green, yellow and gray letters. This will be used to prune the remaining answers. [See here](https://github.com/joshstephenson/Wordle-Solver/edit/main/README.md#how-words-are-pruned-based-on-green-yellow-and-gray-letters)
-2. If the count of available answers (starting at 2315) is above 50, then it simply returns the highest scoring answer from the pruned answer list. If the count of available answers is below 50, then an intersecting guess is made. This is a guess that attempts to partition the remaining answers in the greatest way possible. [See here](https://github.com/joshstephenson/Wordle-Solver/edit/main/README.md#how-intersecting-guesses-are-made)
+2. If the count of remaining answers after pruning from game feedback is above 50, then it simply returns the highest scoring answer from the remaining answers. If the count of available answers is below 50, then an intersecting guess is made. This is a guess that attempts to partition the remaining answers in the greatest way possible. [See here](https://github.com/joshstephenson/Wordle-Solver/edit/main/README.md#how-intersecting-guesses-are-made)
 3. As soon as the answers are pruned down to fewer than 2 or fewer, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
 ### How words are pruned based on green, yellow and gray letters
@@ -58,7 +58,7 @@ It's worth mentioning that this improvement brings down many words that take mor
 Take `LABEL` as an example. After a starting guess of `SLATE`, the remaining answers will be pruned to only 31. The highest scoring of these (based on letter frequency) is `BALER`, which after guessing would only leave 1 word: `LABEL`. Using the intersecting guess after `SLATE`, the guesses will be: `GRIND` and `CHUMP` before landing on `LABEL`. So, the intersecting guesses increase the number of steps from 3 to 4.
 
 ## Related Projects
-Please check out this other project, written in Rust, that determines the lower bound for all answer words using a binary queue to walk down all possible paths.
+Please check out this other project, written in Rust, that determines the lower bound for all answer words using a binary heap to explore all possible paths, finding the guaranteed minimum.
 * [Wordle Solver in Rust](https://github.com/joshstephenson/Wordle-Solver-Rust)
 
 ## Usage
