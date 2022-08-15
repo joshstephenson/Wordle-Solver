@@ -10,7 +10,7 @@ This is a python tool to solve [Wordle](https://www.nytimes.com/games/wordle/ind
 ![KHAKI](https://user-images.githubusercontent.com/11002/184548002-2f5cc825-9ec6-47df-a703-7490a4eb593a.png)
 
 ## Goals of this Project
-![results-SALET-3 6799](https://user-images.githubusercontent.com/11002/184561785-906c3b7e-4b0a-436a-8f39-af71a7089351.png)
+![results-SALET-3 6799](https://user-images.githubusercontent.com/11002/184674756-106a7d7b-b619-4e64-bfb5-5a970719e77e.png)
 
 The goals of this project are:
 1. To solve all 2315 answer words in 6 guesses or fewer without backtracking. Currently all words are solved in 6 words or fewer with 89.8% solved in 4 and under. Using the starting word `SALET`, only 6 words require 6 guesses, but the overall average is 3.6799. Using `SLATE` as the starting word, there are 12 words that require 6 guesses but the overall average drops to 3.676.
