@@ -461,7 +461,8 @@ class Solver:
                     unused.remove(letter)
         for letter in out_of_place:
             self.puzzle.hit(letter, word.index(letter), False)
-            unused.remove(letter)
+            if letter in unused:
+                unused.remove(letter)
         for letter in unused:
             self.puzzle.miss(letter)
 
