@@ -30,7 +30,7 @@ At the start and after each guess, the algorithm finds the next best guess using
 
 1. After each guess, the guessed word will be compared against the target word, tallying the green, yellow and gray letters. This will be used to prune the remaining answers. [See here](https://github.com/joshstephenson/Wordle-Solver/edit/main/README.md#how-words-are-pruned-based-on-green-yellow-and-gray-letters)
 2. If the count of remaining answers after pruning from game feedback is above 50, then it simply returns the highest scoring answer from the remaining answers. If the count of available answers is below 50, then an intersecting guess is made. This is a guess that attempts to partition the remaining answers in the greatest way possible. [See here](https://github.com/joshstephenson/Wordle-Solver/edit/main/README.md#how-intersecting-guesses-are-made)
-3. As soon as the answers are pruned down to fewer than 2 or fewer, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
+3. As soon as the answers are pruned down to 2 or fewer, it will pick the first answer (which will always have the highest word score) and then finally the last remaining answer if necessary.
 
 ### How words are pruned based on green, yellow and gray letters
 After each guess, the answer list is pruned so that:
