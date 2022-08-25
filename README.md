@@ -70,7 +70,8 @@ Example:
 ```
 $ ./wordle_runner.py 
 ```
-![Screen Shot 2022-08-25 at 11 55 38 AM](https://user-images.githubusercontent.com/11002/186712906-c3c785df-2a39-4bcd-95e2-21ac7b22832c.png)
+![wordle-solver](https://user-images.githubusercontent.com/11002/186752578-8f995c1f-8bb5-4533-9701-90db73d57bc8.gif)
+
 
 For debugging purposes, you can enable logging with `export WORDLE_LOGGING=1; ./SolverTest.py`.
 
