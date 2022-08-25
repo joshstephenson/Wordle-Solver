@@ -358,10 +358,7 @@ class LetterFeedback:
         for key in self.green:
             greens[key] = self.green[key]
         greens = ''.join(greens)
-        yellows = ['*' for i in range(0,5)]
-        for key in self.yellow:
-            yellows[key] = [''.join(x) for x in self.yellow[key]]
-        yellows = ''.join(yellows)
+        yellows = dict(map(lambda y: (y[0], ','.join(y[1])), self.yellow.items()))
         return f'--Green: {greens}, Yellow: {yellows}, Gray: {gray}, Unused: {unused}'
 
 class Puzzle:
