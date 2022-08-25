@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from termcolor import colored
 
 from wordle_solver import Solver
 from wordle_solver import Dictionary
@@ -37,7 +38,13 @@ else:
         if solution.guess_count > maximum:
             maximum = solution.guess_count
         avg = round(guess_count / count, 4)
-        print(str(avg).ljust(6) + " " + solution.word + "(" + str(solution.guess_count) + "): " + str(', '.join(solution.guesses)))
+        color = 'red'
+        if solution.guess_count < 4:
+            color = 'green'
+        elif solution.guess_count < 5:
+            color = 'yellow'
+        output = str(avg).ljust(6) + " " + solution.word + "(" + str(solution.guess_count) + "): " + str(', '.join(solution.guesses))
+        print(colored(output, color))
 
         if solution.guess_count not in scores:
             scores[solution.guess_count] = {'count':1, 'words':[]}
