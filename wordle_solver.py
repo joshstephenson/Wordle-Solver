@@ -159,15 +159,16 @@ class Dictionary:
         Used internally to decide whether or not a word should be removed from a given word list
         based on LetterFeedback (greens, yellows, grays and used).
         """
-        # Don't save words that have YELLOW letters in yellow spots
-        for position, letter in self.feedback.yellow.items():
-            if letter not in word or word[position] == letter:
-                return False
-        # Don't save words that have gray letters
+        # Don't save words that have YELLOW letters in YELLOW spots
+        for position, letters in self.feedback.yellow.items():
+            for letter in letters:
+                if letter not in word or word[position] == letter:
+                    return False
+        # Don't save words that have GRAY letters
         for letter in self.feedback.gray:
             if letter in word:
                 return False
-        # Save words that have GREEN letters in green spots
+        # Don't save words that don't have GREEN letters in GREEN spots
         for position, letter in self.feedback.green.items():
             if word[position] != letter:
                 return False
@@ -330,7 +331,10 @@ class LetterFeedback:
         if is_green:
             self.green[position] = letter
         else:
-            self.yellow[position] = letter
+            if position not in self.yellow:
+                self.yellow[position] = [letter]
+            elif letter not in self.yellow[position]: # don't add the same letter twice in the same index
+                    self.yellow[position].append(letter)
 
     def miss(self, letter):
         self.gray.add(letter)
@@ -356,7 +360,7 @@ class LetterFeedback:
         greens = ''.join(greens)
         yellows = ['*' for i in range(0,5)]
         for key in self.yellow:
-            yellows[key] = self.yellow[key]
+            yellows[key] = [''.join(x) for x in self.yellow[key]]
         yellows = ''.join(yellows)
         return f'--Green: {greens}, Yellow: {yellows}, Gray: {gray}, Unused: {unused}'
 
