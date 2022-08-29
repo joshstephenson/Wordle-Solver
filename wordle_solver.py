@@ -268,7 +268,6 @@ class Dictionary:
         if guess is None:
             guess = self.answers[0]
 
-        assert(guess is not None)
         return guess
 
     def is_answer(self, guess):
