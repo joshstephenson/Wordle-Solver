@@ -11,13 +11,15 @@ parser.add_argument('-w', '--word', action="store", dest="word", help="Test one 
 parser.add_argument('-r', '--rank', action="store", dest="rank", help="Get word rank")
 parser.add_argument('-s', '--score', action="store", dest="score", help="Get word score")
 parser.add_argument('-d', '--dictionary', action="store", dest="dictionary", help="Run a dictionary file")
+parser.add_argument('-di','--disable-intersecting', action="store_true", dest="disable_intersecting", help="Disable intersecting guesses")
 args = parser.parse_args()
+use_intersecting = not args.disable_intersecting
 if args.rank:
     print(Dictionary().rank_of(args.rank))
 elif args.score:
     print(Dictionary().score_of(args.score))
 elif args.word:
-    solution = Solver(args.word.strip().upper()).solve('SLATE')
+    solution = Solver(args.word.strip().upper(), use_intersecting).solve('SLATE')
     print("Solved: " + solution.word + " in " + str(solution.guess_count) + " guesses: ")
     print(', '.join(solution.guesses))
 else:
@@ -31,7 +33,7 @@ else:
     avg = 0
     for word in Dictionary().answers:
         count += 1
-        solution = Solver(word).solve(starting_word)
+        solution = Solver(word, use_intersecting).solve(starting_word)
         guess_count += solution.guess_count
         if solution.guess_count > 6:
             hardest_words.append(word)
