@@ -97,12 +97,12 @@ $ ./wordle_runner.py -s alert
 ## Interactive Solver
 This is the most useful thing you might want to use while you are actually solving the puzzle online. It will recommend the player's next guess, receive the player's chosen guess along with green and yellow letters:
 ```
-$ ./wordle_interactive.py
+$ ./wordle_interactive.py -s
 ```
 
 Example:
 ```
-$ ./wordle_interactive.py 
+$ ./wordle_interactive.py -s
 What is your first word guess? (press ENTER for SLATE) 
 > slate 
 You entered: SLATE
@@ -125,6 +125,8 @@ What is your next guess? (press ENTER for PATTY)
 > patty
 You won 😉 in 3 guesses!
 ```
+
+Use without the `-s` option to omit suggestions for subsequent guess.
 
 ## Most Popular Letters for Each Position in Five Letter English Words
 - S is the most frequent starting letter.
