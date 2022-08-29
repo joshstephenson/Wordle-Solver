@@ -50,7 +50,7 @@ class PositionLetters:
         return f'{self.letter}:{self.score}'
 
 class Dictionary:
-    def __init__(self):
+    def __init__(self, use_intersecting = True):
         guesses = self.get_words('nyt-guesses.txt')
         answers = self.get_words('nyt-answers.txt')
         self.frequency = self._generate_letter_frequency(answers)
@@ -61,6 +61,8 @@ class Dictionary:
         self.answers = self._sort_by_score(self._word_scores(answers))
 
         self.feedback = LetterFeedback()
+
+        self.use_intersecting_guesses = use_intersecting
 
     def get_words(self, filename):
         word_arr = []
@@ -257,13 +259,13 @@ class Dictionary:
 
     def next_guess(self):
         """
-        This function starts the pruning process and based on number of answers and exclusive_words remaining,
+        This function starts the pruning process and based on number of answers remaining
         returns either an answer or an intersecting word
         """
         self._update()
         log(f'Remaining Answers ({len(self.answers)}): {self.answers}')
         guess = None
-        if len(self.answers) < 50 and len(self.answers) > 2:
+        if self.use_intersecting_guesses and len(self.answers) < 50 and len(self.answers) > 2:
             guess = self.intersecting_word()
         if guess is None:
             guess = self.answers[0]
@@ -362,8 +364,8 @@ class LetterFeedback:
         return f'--Green: {greens}, Yellow: {yellows}, Gray: {gray}, Unused: {unused}'
 
 class Puzzle:
-    def __init__(self):
-        self.dictionary = Dictionary()
+    def __init__(self, use_intersecting = True):
+        self.dictionary = Dictionary(use_intersecting)
         self.feedback = self.dictionary.feedback
 
         # words we have guessed
@@ -402,12 +404,12 @@ class Solution:
         self.guesses = guesses
 
 class Solver:
-    def __init__(self, target = None):
+    def __init__(self, target = None, use_intersecting = True):
         if target is not None:
             self.target = target.upper()
         else:
             self.target = None
-        self.puzzle = Puzzle()
+        self.puzzle = Puzzle(use_intersecting)
         if self.target is not None and not self.puzzle.is_supported_answer(self.target):
             raise UnsupportedAnswer()
         self._is_solved = False
